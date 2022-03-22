@@ -2,11 +2,13 @@ import 'dart:async';
 import 'package:background_location/background_location.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_background_service/flutter_background_service.dart';
+import 'package:permission_handler/permission_handler.dart';
 import 'package:suraksha/Pages/Dashboard/dashboard.dart';
 import 'package:suraksha/Pages/splash.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:shake/shake.dart';
+import 'package:suraksha/Services/GenerateAlert.dart';
 import 'package:telephony/telephony.dart';
 import 'package:workmanager/workmanager.dart';
 import 'package:perfect_volume_control/perfect_volume_control.dart';
@@ -44,35 +46,58 @@ void callBack(String tag) async {
   }
 }
 
+const simplePeriodicTask = "simplePeriodicTask";
+const sendVideo = "sendVideo";
 void callbackDispatcher() {
+      print("hello world");
   Workmanager().executeTask((task, inputData) async {
-    if(task==3){
-      List contacts = inputData!['contacts'];
-      final prefs = await SharedPreferences.getInstance();
-      List<String>? location = prefs.getStringList("location");
-      String a = location![0];
-      String b = location[1];
-      String link = "http://maps.google.com/?q=$a,$b";
-      for (String contact in contacts) {
-        Telephony.backgroundInstance.sendSms(
-            to: contact, message: "I am on my way! Track me here.\n$link");
-      }
-      return true;
+    print("\n\n\n $task \n\n\n");
+    switch(task){
+      case simplePeriodicTask:
+        print("Inside 3..............\n\n\n\n");
+        List contacts = inputData!['contacts'];
+        final prefs = await SharedPreferences.getInstance();
+        List<String>? location = prefs.getStringList("location");
+        String a = location![0];
+        String b = location[1];
+        String link = "http://maps.google.com/?q=$a,$b";
+        for (String contact in contacts) {
+          Telephony.backgroundInstance.sendSms(
+              to: contact, message: "I am on my way! Track me here.\n$link");
+        }
+        return true;
+      case sendVideo:
+      print("inside sendvideo\n\n");
+      bool? permissionsGranted = await Telephony.instance.requestSmsPermissions;
+
+        List contacts = inputData!['contacts'];
+        String link = inputData['link'];
+        final SmsSendStatusListener listener = (SendStatus status) {
+    // Handle the status
+                      print(status);
+                      if(status=='SENT'){
+                        print("yayya");
+                      }
+          };
+        for (String contact in contacts) {
+          print(contact);
+          try{
+            await Telephony.backgroundInstance.sendSms(
+              to: contact, message: "Check Video Recording here.\n$link",
+              statusListener: listener
+);
+              print("message sent");
+          }catch(e){
+            print(e);
+            print("message not sent");
+          }
+        }
+        return true;
     }
-    if(task==4){
-      List contacts = inputData!['contacts'];
-      String link = inputData['link'];
-      for (String contact in contacts) {
-        Telephony.backgroundInstance.sendSms(
-            to: contact, message: "Check Video Recording here.\n$link");
-      }
-      return true;
-    }
-    return true;
+      return Future.value(true);
   });
 }
 
-const simplePeriodicTask = "simplePeriodicTask";
 
 Future<void> initializeService() async {
   final service = FlutterBackgroundService();
@@ -201,6 +226,7 @@ class _MyAppState extends State<MyApp> {
         if (keyPressCount == 3) {
           print("alert generated");
           keyPressCount = 0;
+          generateAlert();
         }
       }
 
@@ -236,7 +262,7 @@ class _MyAppState extends State<MyApp> {
         print(alertFlag);
         if (alertFlag == true) {
           print("Generating Alert");
-          // generateAlert();
+          generateAlert();
         } else {
           print("alert not Generated");
           prefs.setBool('alertFlag', true);

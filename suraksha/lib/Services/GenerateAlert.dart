@@ -7,11 +7,8 @@ import 'package:workmanager/workmanager.dart';
 import 'package:camera/camera.dart';
 import 'package:gallery_saver/gallery_saver.dart';
 
-import 'package:file_picker/file_picker.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_storage/firebase_storage.dart';
-import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:path/path.dart';
 
 class FirebaseApi {
@@ -75,7 +72,7 @@ Future<void> backgroundVideoRecording() async {
   await _cameraController.initialize();
   await _cameraController.prepareForVideoRecording();
   await _cameraController.startVideoRecording();
-  await Future.delayed(const Duration(seconds: 20), () {});
+  await Future.delayed(const Duration(seconds: 2), () {});
   print("120 secs Done");
   final file = await _cameraController.stopVideoRecording();
   print("\n\n\n");
@@ -100,7 +97,7 @@ Future<void> backgroundVideoRecording() async {
 
     if (task == null) return;
 
-    final snapshot = await task!.whenComplete(() {});
+    final snapshot = await task.whenComplete(() {});
     final urlDownload = await snapshot.ref.getDownloadURL();
 
     print('Download-Link: $urlDownload');

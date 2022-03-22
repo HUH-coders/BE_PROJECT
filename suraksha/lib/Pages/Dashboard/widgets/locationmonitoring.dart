@@ -137,7 +137,7 @@ class _LocationMonitoringState extends State<LocationMonitoring> {
                             }
                           },
                           subtitle: Text(
-                              "Your location will be shared with one of your contacts every 15 minutes")))
+                              "Your location will be shared with all of your contacts every 15 minutes")))
                 ]));
           });
         });

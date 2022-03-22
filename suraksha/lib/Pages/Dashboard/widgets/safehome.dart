@@ -202,7 +202,7 @@ class _SafeHomeState extends State<SafeHome> {
                           }
                         },
                         subtitle: Text(
-                            "Your location will be shared with one of your contacts every 15 minutes"),
+                            "Your location will be shared with all of your contacts every 15 minutes & your audio will be monitored"),
                       )),
                 ],
               ),
