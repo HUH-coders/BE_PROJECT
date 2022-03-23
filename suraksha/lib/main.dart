@@ -1,3 +1,5 @@
+// ignore_for_file: deprecated_member_use
+
 import 'dart:async';
 import 'package:background_location/background_location.dart';
 import 'package:flutter/material.dart';
@@ -13,6 +15,8 @@ import 'package:telephony/telephony.dart';
 import 'package:workmanager/workmanager.dart';
 import 'package:perfect_volume_control/perfect_volume_control.dart';
 import 'package:system_alert_window/system_alert_window.dart';
+import 'package:mailer/mailer.dart';
+import 'package:mailer/smtp_server.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -45,6 +49,26 @@ void callBack(String tag) async {
     SystemAlertWindow.closeSystemWindow(prefMode: SystemWindowPrefMode.OVERLAY);
   }
 }
+void sendLocation(email,location) async {
+
+String username = 'autoemailtesting12@gmail.com';
+String password = 'email@1234';
+print(username);
+print(password);
+  final smtpServer = gmail(username, password);
+  print(smtpServer);
+  final equivalentMessage = Message()
+  ..from = Address(username, 'Suraksha')
+  ..recipients.add(Address(email))
+  // ..ccRecipients.addAll([Address('urvi.bheda@somaiya.edu'), 'himali.saini@somaiya.edu'])
+  // ..bccRecipients.add('bccAddress@example.com')
+  ..subject = 'Alert Generated ${DateTime.now()}'
+  ..text = 'This is the plain text.\nThis is line 2 of the text part.'
+  ..html = "<h1>Alert generated</h1>\n\n<p>See location Here: ${location} </p>";
+
+  await send(equivalentMessage, smtpServer);
+  }
+
 
 const simplePeriodicTask = "simplePeriodicTask";
 const sendVideo = "sendVideo";
@@ -55,45 +79,42 @@ void callbackDispatcher() {
     switch(task){
       case simplePeriodicTask:
         print("Inside 3..............\n\n\n\n");
-        List contacts = inputData!['contacts'];
+        List emails = inputData!['emails'];
         final prefs = await SharedPreferences.getInstance();
         List<String>? location = prefs.getStringList("location");
         String a = location![0];
         String b = location[1];
         String link = "http://maps.google.com/?q=$a,$b";
-        for (String contact in contacts) {
-          Telephony.backgroundInstance.sendSms(
-              to: contact, message: "I am on my way! Track me here.\n$link");
-        }
-        return true;
-      case sendVideo:
-      print("inside sendvideo\n\n");
-      bool? permissionsGranted = await Telephony.instance.requestSmsPermissions;
-
-        List contacts = inputData!['contacts'];
-        String link = inputData['link'];
-        final SmsSendStatusListener listener = (SendStatus status) {
-    // Handle the status
-                      print(status);
-                      if(status=='SENT'){
-                        print("yayya");
-                      }
-          };
-        for (String contact in contacts) {
-          print(contact);
-          try{
-            await Telephony.backgroundInstance.sendSms(
-              to: contact, message: "Check Video Recording here.\n$link",
-              statusListener: listener
-);
-              print("message sent");
-          }catch(e){
-            print(e);
-            print("message not sent");
-          }
+        print(link);
+        for (String email in emails) {
+          sendLocation(email,link);
+          // Telephony.backgroundInstance.sendSms(
+          //     to: contact, message: "I am on my way! Track me here.\n$link");
         }
         return true;
     }
+//       case sendVideo:
+      
+//       print("inside sendvideo\n\n");
+//       bool? permissionsGranted = await Telephony.instance.requestSmsPermissions;
+
+//         List contacts = inputData!['contacts'];
+//         String link = inputData['link'];
+//         sendMail(link);
+// //         for (String contact in contacts) {
+// //           print(contact);
+// //           try{
+// //             await Telephony.backgroundInstance.sendSms(
+// //               to: contact, message: "Check Video Recording here.\n$link",
+// // );
+// //               print("message sent");
+// //           }catch(e){
+// //             print(e);
+// //             print("message not sent");
+// //           }
+// //         }
+//         return true;
+//     }
       return Future.value(true);
   });
 }
@@ -226,7 +247,10 @@ class _MyAppState extends State<MyApp> {
         if (keyPressCount == 3) {
           print("alert generated");
           keyPressCount = 0;
-          generateAlert();
+          _startTimer();
+          _showOverlayWindow();
+          // generateAlert();
+          // backgroundVideoRecording();
         }
       }
 
