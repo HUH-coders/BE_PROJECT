@@ -1,16 +1,12 @@
-// ignore_for_file: deprecated_member_use
-
 import 'dart:io';
 import 'dart:typed_data';
-import 'package:background_location/background_location.dart';
+import 'package:geolocator/geolocator.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:suraksha/Models/EmergencyContact.dart';
 import 'package:suraksha/Services/UserService.dart';
 import 'package:workmanager/workmanager.dart';
 import 'package:camera/camera.dart';
 import 'package:gallery_saver/gallery_saver.dart';
-
-import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:path/path.dart';
 import 'package:mailer/mailer.dart';
@@ -23,6 +19,7 @@ class FirebaseApi {
 
       return ref.putFile(file);
     } on FirebaseException catch (e) {
+      print(e);
       return null;
     }
   }
@@ -33,52 +30,24 @@ class FirebaseApi {
 
       return ref.putData(data);
     } on FirebaseException catch (e) {
+      print(e);
       return null;
     }
   }
 }
 
-
 Future<void> sendLocationPeriodically() async {
-  // String loc;
-  // await BackgroundLocation.setAndroidNotification(
-  //   title: "Location tracking is running in the background!",
-  //   message: "You can turn it off from settings menu inside the app",
-  //   icon: '@mipmap/ic_logo',
-  // );
-  BackgroundLocation.startLocationService(
-    distanceFilter: 20,
-  );
-
-  BackgroundLocation.getLocationUpdates((location) {
-    print(location);
-    // loc = location;
-    // prefs.setStringList("location",
-    //     [location.latitude.toString(), location.longitude.toString()]);
-  });
-
-
-
-  List<String> emails = [];
+  List<String> contacts = [];
   final prefs = await SharedPreferences.getInstance();
   String? email = prefs.getString('userEmail');
   List<EmergencyContact> ecs = await getUserContacts(email!);
   for (EmergencyContact i in ecs) {
-    emails.add(i.email);
+    contacts.add(i.phoneno);
   }
-  // List<String>? location = prefs.getStringList("location");
-  // print("location: $location");
-  //       String a = location![0];
-  //       String b = location[1];
-  //       String link = "http://maps.google.com/?q=$a,$b";
-  //       print(link);
-  // for(email in emails){
-  //   sendMail(email,link);
-  // }
-  // Workmanager().registerPeriodicTask("3", 'simplePeriodicTask',
-  //     tag: "3",
-  //     inputData: {"emails": emails},
-  //     frequency: Duration(minutes: 15));
+  Workmanager().registerPeriodicTask("3", 'sendLocation',
+      tag: "3",
+      inputData: {"contacts": contacts},
+      frequency: Duration(minutes: 3));
 }
 
 Future<void> sendVideo(link) async {
@@ -89,32 +58,31 @@ Future<void> sendVideo(link) async {
   for (EmergencyContact i in ecs) {
     contacts.add(i.phoneno);
   }
-  Workmanager().registerOneOffTask("4", 'sendVideo',
-      tag: "4",
-      inputData: {"contacts": contacts, "link":link},
+  Workmanager().registerOneOffTask(
+    "4",
+    'sendVideo',
+    tag: "4",
+    inputData: {"contacts": contacts, "link": link},
   );
-      // frequency: Duration(minutes: 15));
 }
 
-void sendMail(email,link) async {
-print("inside send mail");
-String username = 'autoemailtesting12@gmail.com';
-String password = 'email@1234';
-print(username);
-print(password);
+void sendMail(email, link) async {
+  print("inside send mail");
+  String username = 'autoemailtesting12@gmail.com';
+  String password = 'email@1234';
   final smtpServer = gmail(username, password);
   print(smtpServer);
   final equivalentMessage = Message()
-  ..from = Address(username, 'Suraksha')
-  ..recipients.add(Address(email))
-  // ..ccRecipients.addAll([Address('urvi.bheda@somaiya.edu'), 'himali.saini@somaiya.edu'])
-  // ..bccRecipients.add('bccAddress@example.com')
-  ..subject = 'Alert Generated ${DateTime.now()}'
-  ..text = 'This is the plain text.\nThis is line 2 of the text part.'
-  ..html = "<h1>Alert generated</h1>\n\n<p>Track Here: ${link} </p>";
+    ..from = Address(username, 'Suraksha')
+    ..recipients.add(Address(email))
+    // ..ccRecipients.addAll([Address('urvi.bheda@somaiya.edu'), 'himali.saini@somaiya.edu'])
+    // ..bccRecipients.add('bccAddress@example.com')
+    ..subject = 'Alert Generated ${DateTime.now()}'
+    ..text = 'This is the plain text.\nThis is line 2 of the text part.'
+    ..html = "<h1>Alert generated</h1>\n\n<p>Track Here: $link </p>";
 
   await send(equivalentMessage, smtpServer);
-  }
+}
 
 Future<void> backgroundVideoRecording() async {
   final cameras = await availableCameras();
@@ -137,39 +105,37 @@ Future<void> backgroundVideoRecording() async {
   print("recording stopped");
 }
 
-  Future uploadFile(file) async {
-    print("abcdddddddddddddddddddddddddd");
-      UploadTask? task;
-    if (file == null) return;
+Future uploadFile(file) async {
+  print("abcdddddddddddddddddddddddddd");
+  UploadTask? task;
+  if (file == null) return;
 
-    final fileName = basename(file!.path);
-    final destination = 'files/$fileName';
+  final fileName = basename(file!.path);
+  final destination = 'files/$fileName';
 
-    task = FirebaseApi.uploadFile(destination, file!);
-    // setState(() {});
+  task = FirebaseApi.uploadFile(destination, file!);
+  // setState(() {});
 
-    if (task == null) return;
+  if (task == null) return;
 
-    final snapshot = await task.whenComplete(() {});
-    final urlDownload = await snapshot.ref.getDownloadURL();
+  final snapshot = await task.whenComplete(() {});
+  final urlDownload = await snapshot.ref.getDownloadURL();
 
-    print('Download-Link: $urlDownload');
-    // sendVideo(urlDownload);
-    List<String> emails = [];
-  final prefs = await SharedPreferences.getInstance();
-  String? email = prefs.getString('userEmail');
-  List<EmergencyContact> ecs = await getUserContacts(email!);
-  for (EmergencyContact i in ecs) {
-    emails.add(i.email);
-  }
-  for(email in emails){
-    sendMail(email,urlDownload);
-  }
-  }
-
+  print('Download-Link: $urlDownload');
+  sendVideo(urlDownload);
+  // List<String> emails = [];
+  // final prefs = await SharedPreferences.getInstance();
+  // String? email = prefs.getString('userEmail');
+  // List<EmergencyContact> ecs = await getUserContacts(email!);
+  // for (EmergencyContact i in ecs) {
+  //   emails.add(i.email);
+  // }
+  // for (email in emails) {
+  //   sendMail(email, urlDownload);
+  // }
+}
 
 Future<void> generateAlert() async {
   await sendLocationPeriodically();
   await backgroundVideoRecording();
 }
-

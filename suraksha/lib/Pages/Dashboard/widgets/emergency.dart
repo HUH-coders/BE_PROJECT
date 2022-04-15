@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_phone_direct_caller/flutter_phone_direct_caller.dart';
+import 'package:showcaseview/showcaseview.dart';
 
 class Emergency extends StatelessWidget {
-  const Emergency({Key? key}) : super(key: key);
+  final List<GlobalKey> keyList;
+  const Emergency({Key? key, required this.keyList}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -12,31 +14,41 @@ class Emergency extends StatelessWidget {
       child: ListView(
         physics: const BouncingScrollPhysics(),
         scrollDirection: Axis.horizontal,
-        children: const [
-          EmergencyCard(
-              imageName: "assets/icons/alert.png",
-              title: "Women Helpline",
-              description: "Call 1-0-9-1 for emergencies.",
-              number: "1 -0 -9 -1",
-              callNum: "1091"),
+        children: [
+          SizedBox(width: 10),
+          Showcase(
+            title: "Emergency Helpline Numbers",
+            description: 'Tap to call immediately',
+            key: keyList[0],
+            child: EmergencyCard(
+                imageName: "assets/icons/alert.png",
+                title: "Women Helpline",
+                description: "Call 1-0-9-1 for emergencies.",
+                number: "1 -0 -9 -1",
+                callNum: "1091"),
+          ),
+          SizedBox(width: 10),
           EmergencyCard(
               imageName: "assets/ambulance.png",
               title: "Ambulance",
               description: "Any medical emergency",
               number: "1 -0 -2",
               callNum: "102"),
+          SizedBox(width: 10),
           EmergencyCard(
               imageName: "assets/icons/alert.png",
               title: "Police",
               description: "Any crime related emergency",
               number: "1 -0 -0",
               callNum: "100"),
+          SizedBox(width: 10),
           EmergencyCard(
               imageName: "assets/army.png",
               title: "Active Emergency",
               description: "National Counter Terrorism Authority",
               number: "1 -1 -2",
               callNum: "112"),
+          SizedBox(width: 10),
         ],
       ),
     );
@@ -62,7 +74,7 @@ class EmergencyCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-        padding: const EdgeInsets.only(left: 10.0, bottom: 5),
+        padding: const EdgeInsets.only(bottom: 5),
         child: Card(
             elevation: 5,
             shape: RoundedRectangleBorder(

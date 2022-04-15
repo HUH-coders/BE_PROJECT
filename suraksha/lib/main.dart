@@ -1,10 +1,7 @@
-// ignore_for_file: deprecated_member_use
-
 import 'dart:async';
-import 'package:background_location/background_location.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_background_service/flutter_background_service.dart';
-import 'package:permission_handler/permission_handler.dart';
+import 'package:geolocator/geolocator.dart';
 import 'package:suraksha/Pages/Dashboard/dashboard.dart';
 import 'package:suraksha/Pages/splash.dart';
 import 'package:firebase_core/firebase_core.dart';
@@ -15,8 +12,10 @@ import 'package:telephony/telephony.dart';
 import 'package:workmanager/workmanager.dart';
 import 'package:perfect_volume_control/perfect_volume_control.dart';
 import 'package:system_alert_window/system_alert_window.dart';
-import 'package:mailer/mailer.dart';
-import 'package:mailer/smtp_server.dart';
+import 'package:showcaseview/showcaseview.dart';
+
+// import 'package:mailer/mailer.dart';
+// import 'package:mailer/smtp_server.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -28,17 +27,15 @@ void main() async {
     prefs.setBool('isLoggedIn', false);
     prefs.setString('userEmail', '');
     prefs.setBool('alertFlag', true);
+    prefs.setBool("showManual", false);
   }
+
   Workmanager().initialize(
     callbackDispatcher,
     isInDebugMode: true,
   );
   runApp(MyApp());
 }
-
-// class AlertVariable {
-//   static bool alertFlag = true;
-// }
 
 void callBack(String tag) async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -49,76 +46,73 @@ void callBack(String tag) async {
     SystemAlertWindow.closeSystemWindow(prefMode: SystemWindowPrefMode.OVERLAY);
   }
 }
-void sendLocation(email,location) async {
 
-String username = 'autoemailtesting12@gmail.com';
-String password = 'email@1234';
-print(username);
-print(password);
-  final smtpServer = gmail(username, password);
-  print(smtpServer);
-  final equivalentMessage = Message()
-  ..from = Address(username, 'Suraksha')
-  ..recipients.add(Address(email))
-  // ..ccRecipients.addAll([Address('urvi.bheda@somaiya.edu'), 'himali.saini@somaiya.edu'])
-  // ..bccRecipients.add('bccAddress@example.com')
-  ..subject = 'Alert Generated ${DateTime.now()}'
-  ..text = 'This is the plain text.\nThis is line 2 of the text part.'
-  ..html = "<h1>Alert generated</h1>\n\n<p>See location Here: ${location} </p>";
+// void sendLocation(email, location) async {
+//   String username = 'autoemailtesting12@gmail.com';
+//   String password = 'email@1234';
+//   final smtpServer = gmail(username, password);
+//   final equivalentMessage = Message()
+//     ..from = Address(username, 'Suraksha')
+//     ..recipients.add(Address(email))
+//     // ..ccRecipients.addAll([Address('urvi.bheda@somaiya.edu'), 'himali.saini@somaiya.edu'])
+//     // ..bccRecipients.add('bccAddress@example.com')
+//     ..subject = 'Alert Generated ${DateTime.now()}'
+//     ..text = 'This is the plain text.\nThis is line 2 of the text part.'
+//     ..html = "<h1>Alert generated</h1>\n\n<p>See location Here: $location </p>";
+// }
 
-  await send(equivalentMessage, smtpServer);
-  }
-
-
-const simplePeriodicTask = "simplePeriodicTask";
+const simplePeriodicTask = "sendLocation";
 const sendVideo = "sendVideo";
 void callbackDispatcher() {
-      print("hello world");
   Workmanager().executeTask((task, inputData) async {
-    print("\n\n\n $task \n\n\n");
-    switch(task){
+    switch (task) {
       case simplePeriodicTask:
-        print("Inside 3..............\n\n\n\n");
-        List emails = inputData!['emails'];
-        final prefs = await SharedPreferences.getInstance();
-        List<String>? location = prefs.getStringList("location");
-        String a = location![0];
-        String b = location[1];
-        String link = "http://maps.google.com/?q=$a,$b";
-        print(link);
-        for (String email in emails) {
-          sendLocation(email,link);
-          // Telephony.backgroundInstance.sendSms(
-          //     to: contact, message: "I am on my way! Track me here.\n$link");
-        }
+        await sendLocationMessage(inputData!['contacts']);
+        return true;
+      case sendVideo:
+        await Telephony.instance.requestSmsPermissions;
+        List contacts = inputData!['contacts'];
+        String link = inputData['link'];
+        sendVideoMessage(contacts, link);
         return true;
     }
-//       case sendVideo:
-      
-//       print("inside sendvideo\n\n");
-//       bool? permissionsGranted = await Telephony.instance.requestSmsPermissions;
-
-//         List contacts = inputData!['contacts'];
-//         String link = inputData['link'];
-//         sendMail(link);
-// //         for (String contact in contacts) {
-// //           print(contact);
-// //           try{
-// //             await Telephony.backgroundInstance.sendSms(
-// //               to: contact, message: "Check Video Recording here.\n$link",
-// // );
-// //               print("message sent");
-// //           }catch(e){
-// //             print(e);
-// //             print("message not sent");
-// //           }
-// //         }
-//         return true;
-//     }
-      return Future.value(true);
+    return Future.value(true);
   });
 }
 
+Future<void> sendLocationMessage(contacts) async {
+  print("heyyyyayayyayyaayyay");
+  Position _locationData = await Geolocator.getCurrentPosition();
+  print("hshsh");
+  print(_locationData);
+
+  String a = _locationData.latitude.toString();
+  String b = _locationData.longitude.toString();
+
+  print(a + b);
+  String link = "http://maps.google.com/?q=$a,$b";
+  for (String contact in contacts) {
+    print(contact);
+    Telephony.backgroundInstance
+        .sendSms(to: contact, message: "I am on my way! Track me here.\n$link");
+  }
+}
+
+Future<void> sendVideoMessage(contacts, link) async {
+  for (String contact in contacts) {
+    print(contact);
+    try {
+      await Telephony.backgroundInstance.sendSms(
+        to: contact,
+        message: "Check Video Recording here.\n$link",
+      );
+      print("message sent");
+    } catch (e) {
+      print(e);
+      print("message not sent");
+    }
+  }
+}
 
 Future<void> initializeService() async {
   final service = FlutterBackgroundService();
@@ -170,23 +164,24 @@ Future<void> onStart() async {
     }
   });
 
-  await BackgroundLocation.setAndroidNotification(
-    title: "Location tracking is running in the background!",
-    message: "You can turn it off from settings menu inside the app",
-    icon: '@mipmap/ic_logo',
-  );
-  BackgroundLocation.startLocationService(
-    distanceFilter: 20,
-  );
+  // await BackgroundLocation.setAndroidNotification(
+  //   title: "Location tracking is running in the background!",
+  //   message: "You can turn it off from settings menu inside the app",
+  //   icon: '@mipmap/ic_logo',
+  // );
+  // BackgroundLocation.startLocationService(
+  //   distanceFilter: 20,
+  // );
 
-  BackgroundLocation.getLocationUpdates((location) {
-    print(location);
-    prefs.setStringList("location",
-        [location.latitude.toString(), location.longitude.toString()]);
-  });
+  // BackgroundLocation.getLocationUpdates((location) {
+  //   print(location);
+  //   prefs.setStringList("location",
+  //       [location.latitude.toString(), location.longitude.toString()]);
+  // });
   String screenShake = "Be strong, We are with you!";
   ShakeDetector.autoStart(
-      shakeThresholdGravity: 7,
+      shakeThresholdGravity: 8,
+      shakeSlopTimeMS: 500,
       onPhoneShake: () async {
         print("Test");
       });
@@ -231,11 +226,14 @@ class _MyAppState extends State<MyApp> {
     _requestPermissions();
     SystemAlertWindow.registerOnClickListener(callBack);
     getEmail();
-    ShakeDetector _ = ShakeDetector.autoStart(onPhoneShake: () {
-      print("SHAKE DETECTOR");
-      _startTimer();
-      _showOverlayWindow();
-    });
+    ShakeDetector _ = ShakeDetector.autoStart(
+        shakeThresholdGravity: 8,
+        shakeSlopTimeMS: 500,
+        onPhoneShake: () {
+          print("SHAKE DETECTOR");
+          _startTimer();
+          _showOverlayWindow();
+        });
     Future.delayed(Duration.zero, () async {
       currentvol = await PerfectVolumeControl.getVolume();
     });
@@ -249,8 +247,6 @@ class _MyAppState extends State<MyApp> {
           keyPressCount = 0;
           _startTimer();
           _showOverlayWindow();
-          // generateAlert();
-          // backgroundVideoRecording();
         }
       }
 
@@ -298,6 +294,12 @@ class _MyAppState extends State<MyApp> {
   Future<void> _requestPermissions() async {
     await SystemAlertWindow.requestPermissions(
         prefMode: SystemWindowPrefMode.OVERLAY);
+    // LocationPermission permission = await Geolocator.checkPermission();
+    // print(permission);
+    // permission = await Geolocator.requestPermission();
+    // final Telephony telephony = Telephony.instance;
+    // bool? permissionsGranted = await telephony.requestPhoneAndSmsPermissions;
+    // print(permissionsGranted);
   }
 
   void _showOverlayWindow() {
@@ -360,6 +362,10 @@ class _MyAppState extends State<MyApp> {
         theme: ThemeData(
           primarySwatch: Colors.blue,
         ),
-        home: email != null && email != '' ? Dashboard() : Splash());
+        home: email != null && email != ''
+            ? ShowCaseWidget(
+                builder: Builder(builder: (context) => Dashboard()),
+              )
+            : Splash());
   }
 }

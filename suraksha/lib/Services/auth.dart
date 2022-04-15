@@ -35,6 +35,8 @@ class AuthenticationController {
         await userRef.doc(user.email).set(user.toJson());
         result["flag"] = true;
         result["message"] = "Signup Successful!";
+        SharedPreferences prefs = await SharedPreferences.getInstance();
+        prefs.setBool("showManual", false);
       } catch (e) {
         print(e);
         result["message"] = 'Please try again later!';
