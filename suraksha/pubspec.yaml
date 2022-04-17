@@ -40,7 +40,7 @@ dependencies:
   shared_preferences: ^2.0.12
   flutter_phone_direct_caller: ^2.0.0
   flutter_background_service: ^0.2.2
-  geolocator: ^8.2.0
+  geolocator: ^8.0.0
   telephony: ^0.1.4
   workmanager: ^0.4.1
   shake: ^2.0.0
@@ -64,6 +64,8 @@ dependencies:
   background_sms: ^0.0.4
   mailer: ^5.1.0
   showcaseview: ^1.1.5
+  flutter_local_notifications: ^9.4.0
+
 
 dev_dependencies:
   flutter_test:

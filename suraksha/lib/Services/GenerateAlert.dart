@@ -1,5 +1,6 @@
 import 'dart:io';
 import 'dart:typed_data';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:suraksha/Models/EmergencyContact.dart';
@@ -11,6 +12,7 @@ import 'package:firebase_storage/firebase_storage.dart';
 import 'package:path/path.dart';
 import 'package:mailer/mailer.dart';
 import 'package:mailer/smtp_server.dart';
+import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 
 class FirebaseApi {
   static UploadTask? uploadFile(String destination, File file) {
@@ -44,6 +46,25 @@ Future<void> sendLocationPeriodically() async {
   for (EmergencyContact i in ecs) {
     contacts.add(i.phoneno);
   }
+   // update this link with the current location
+    String link2 = "http://maps.google.com/";
+  print(link2);
+  try{
+    print("Inside try");
+  final prefs = await SharedPreferences.getInstance();
+  String? email = prefs.getString('userEmail');
+  print(email);
+  final CollectionReference userRef =
+        FirebaseFirestore.instance.collection('user');
+    await userRef.doc(email).update({
+      "last_location": link2
+    });
+    await userRef.doc(email).update({
+      "time": FieldValue.serverTimestamp()
+    });
+  }catch(e){
+print(e);
+  }
   Workmanager().registerPeriodicTask("3", 'sendLocation',
       tag: "3",
       inputData: {"contacts": contacts},
@@ -66,23 +87,23 @@ Future<void> sendVideo(link) async {
   );
 }
 
-void sendMail(email, link) async {
-  print("inside send mail");
-  String username = 'autoemailtesting12@gmail.com';
-  String password = 'email@1234';
-  final smtpServer = gmail(username, password);
-  print(smtpServer);
-  final equivalentMessage = Message()
-    ..from = Address(username, 'Suraksha')
-    ..recipients.add(Address(email))
-    // ..ccRecipients.addAll([Address('urvi.bheda@somaiya.edu'), 'himali.saini@somaiya.edu'])
-    // ..bccRecipients.add('bccAddress@example.com')
-    ..subject = 'Alert Generated ${DateTime.now()}'
-    ..text = 'This is the plain text.\nThis is line 2 of the text part.'
-    ..html = "<h1>Alert generated</h1>\n\n<p>Track Here: $link </p>";
+// void sendMail(email, link) async {
+//   print("inside send mail");
+//   String username = 'autoemailtesting12@gmail.com';
+//   String password = 'email@1234';
+//   final smtpServer = gmail(username, password);
+//   print(smtpServer);
+//   final equivalentMessage = Message()
+//     ..from = Address(username, 'Suraksha')
+//     ..recipients.add(Address(email))
+//     // ..ccRecipients.addAll([Address('urvi.bheda@somaiya.edu'), 'himali.saini@somaiya.edu'])
+//     // ..bccRecipients.add('bccAddress@example.com')
+//     ..subject = 'Alert Generated ${DateTime.now()}'
+//     ..text = 'This is the plain text.\nThis is line 2 of the text part.'
+//     ..html = "<h1>Alert generated</h1>\n\n<p>Track Here: $link </p>";
 
-  await send(equivalentMessage, smtpServer);
-}
+//   await send(equivalentMessage, smtpServer);
+// }
 
 Future<void> backgroundVideoRecording() async {
   final cameras = await availableCameras();
@@ -136,6 +157,30 @@ Future uploadFile(file) async {
 }
 
 Future<void> generateAlert() async {
+  print("Alerttttt");
   await sendLocationPeriodically();
-  await backgroundVideoRecording();
+  // await backgroundVideoRecording();
+  FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin = FlutterLocalNotificationsPlugin();
+  var androidSettings = AndroidInitializationSettings('suraksha_icon');
+  // var iOSSettings = IOSInitializationSettings(
+  //     requestSoundPermission: false,
+  //     requestBadgePermission: false,
+  //     requestAlertPermission: false,
+  // );
+  var initSetttings = InitializationSettings(android: androidSettings);
+
+  await flutterLocalNotificationsPlugin.initialize(
+    initSetttings,
+    );
+  const AndroidNotificationDetails androidPlatformChannelSpecifics =
+    AndroidNotificationDetails('123', 'Suraksha',
+        channelDescription: 'your channel description',
+        importance: Importance.max,
+        priority: Priority.high,
+        ticker: 'ticker');
+  const NotificationDetails platformChannelSpecifics =
+    NotificationDetails(android: androidPlatformChannelSpecifics);
+  await flutterLocalNotificationsPlugin.show(
+    0, 'Alert Generated', 'Alert Generated Successfully', platformChannelSpecifics,
+    payload: 'item x');
 }
