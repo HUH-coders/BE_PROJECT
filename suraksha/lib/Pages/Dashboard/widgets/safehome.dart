@@ -58,7 +58,7 @@ class _SafeHomeState extends State<SafeHome> {
   }
 
   void startIt() async {
-    filePath = '/sdcard/Downloads/temp3.wav';
+    filePath = 'sdcard/Downloads/temp3.wav';
     _myRecorder = FlutterSoundRecorder();
 
     await _myRecorder.openAudioSession(

@@ -29,6 +29,9 @@ class _HomeState extends State<Home> {
   showManual() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     bool? val = prefs.getBool("showManual");
+    if (val == null) {
+      val = false;
+    }
     setState(() {
       manualFlag = val!;
     });

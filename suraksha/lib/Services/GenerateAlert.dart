@@ -1,7 +1,7 @@
 import 'dart:io';
 import 'dart:typed_data';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:geolocator/geolocator.dart';
+// import 'package:geolocator/geolocator.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:suraksha/Models/EmergencyContact.dart';
 import 'package:suraksha/Services/UserService.dart';
@@ -10,8 +10,8 @@ import 'package:camera/camera.dart';
 import 'package:gallery_saver/gallery_saver.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:path/path.dart';
-import 'package:mailer/mailer.dart';
-import 'package:mailer/smtp_server.dart';
+// import 'package:mailer/mailer.dart';
+// import 'package:mailer/smtp_server.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 
 class FirebaseApi {
@@ -46,24 +46,20 @@ Future<void> sendLocationPeriodically() async {
   for (EmergencyContact i in ecs) {
     contacts.add(i.phoneno);
   }
-   // update this link with the current location
-    String link2 = "http://maps.google.com/";
+  // update this link with the current location
+  String link2 = "http://maps.google.com/";
   print(link2);
-  try{
+  try {
     print("Inside try");
-  final prefs = await SharedPreferences.getInstance();
-  String? email = prefs.getString('userEmail');
-  print(email);
-  final CollectionReference userRef =
+    final prefs = await SharedPreferences.getInstance();
+    String? email = prefs.getString('userEmail');
+    print(email);
+    final CollectionReference userRef =
         FirebaseFirestore.instance.collection('user');
-    await userRef.doc(email).update({
-      "last_location": link2
-    });
-    await userRef.doc(email).update({
-      "time": FieldValue.serverTimestamp()
-    });
-  }catch(e){
-print(e);
+    await userRef.doc(email).update({"last_location": link2});
+    await userRef.doc(email).update({"time": FieldValue.serverTimestamp()});
+  } catch (e) {
+    print(e);
   }
   Workmanager().registerPeriodicTask("3", 'sendLocation',
       tag: "3",
@@ -160,7 +156,8 @@ Future<void> generateAlert() async {
   print("Alerttttt");
   await sendLocationPeriodically();
   // await backgroundVideoRecording();
-  FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin = FlutterLocalNotificationsPlugin();
+  FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
+      FlutterLocalNotificationsPlugin();
   var androidSettings = AndroidInitializationSettings('suraksha_icon');
   // var iOSSettings = IOSInitializationSettings(
   //     requestSoundPermission: false,
@@ -171,16 +168,16 @@ Future<void> generateAlert() async {
 
   await flutterLocalNotificationsPlugin.initialize(
     initSetttings,
-    );
+  );
   const AndroidNotificationDetails androidPlatformChannelSpecifics =
-    AndroidNotificationDetails('123', 'Suraksha',
-        channelDescription: 'your channel description',
-        importance: Importance.max,
-        priority: Priority.high,
-        ticker: 'ticker');
+      AndroidNotificationDetails('123', 'Suraksha',
+          channelDescription: 'your channel description',
+          importance: Importance.max,
+          priority: Priority.high,
+          ticker: 'ticker');
   const NotificationDetails platformChannelSpecifics =
-    NotificationDetails(android: androidPlatformChannelSpecifics);
-  await flutterLocalNotificationsPlugin.show(
-    0, 'Alert Generated', 'Alert Generated Successfully', platformChannelSpecifics,
-    payload: 'item x');
+      NotificationDetails(android: androidPlatformChannelSpecifics);
+  await flutterLocalNotificationsPlugin.show(0, 'Alert Generated',
+      'Alert Generated Successfully', platformChannelSpecifics,
+      payload: 'item x');
 }

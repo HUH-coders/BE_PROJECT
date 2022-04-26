@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_background_service/flutter_background_service.dart';
 import 'package:geolocator/geolocator.dart';
@@ -10,10 +9,12 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:shake/shake.dart';
 import 'package:suraksha/Services/GenerateAlert.dart';
 import 'package:telephony/telephony.dart';
+import 'package:tflite_audio/tflite_audio.dart';
 import 'package:workmanager/workmanager.dart';
 import 'package:perfect_volume_control/perfect_volume_control.dart';
 import 'package:system_alert_window/system_alert_window.dart';
 import 'package:showcaseview/showcaseview.dart';
+import 'package:android_alarm_manager_plus/android_alarm_manager_plus.dart';
 
 // import 'package:mailer/mailer.dart';
 // import 'package:mailer/smtp_server.dart';
@@ -35,7 +36,31 @@ void main() async {
     callbackDispatcher,
     isInDebugMode: true,
   );
+  await AndroidAlarmManager.initialize();
+
   runApp(MyApp());
+  print("heyya");
+  // if (email != null) {
+  //   await AndroidAlarmManager.periodic(
+  //       const Duration(seconds: 15), 0, fetchLocation);
+  // }
+
+  TfliteAudio.loadModel(
+      model: 'assets/Rakshak_model.tflite',
+      label: 'assets/Rakshak_model_labels.txt',
+      inputType: 'decodedWav');
+}
+
+void fetchLocation() async {
+  print("here");
+  Position _locationData = await Geolocator.getCurrentPosition();
+
+  String a = _locationData.latitude.toString();
+  String b = _locationData.longitude.toString();
+
+  SharedPreferences prefs = await SharedPreferences.getInstance();
+  prefs.setStringList('location', [a, b]);
+  print(a + "\t" + b);
 }
 
 void callBack(String tag) async {
@@ -150,7 +175,7 @@ Future<void> onStart() async {
   WidgetsFlutterBinding.ensureInitialized();
   final service = FlutterBackgroundService();
 
-  SharedPreferences prefs = await SharedPreferences.getInstance();
+  // SharedPreferences prefs = await SharedPreferences.getInstance();
 
   service.onDataReceived.listen((event) async {
     if (event!["action"] == "setAsForeground") {

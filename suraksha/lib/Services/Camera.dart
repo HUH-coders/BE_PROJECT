@@ -4,7 +4,6 @@ import 'package:camera/camera.dart';
 import 'package:flutter/material.dart';
 import 'package:gallery_saver/gallery_saver.dart';
 
-
 class CameraPage extends StatefulWidget {
   const CameraPage({Key? key}) : super(key: key);
 
@@ -31,7 +30,8 @@ class _CameraPageState extends State<CameraPage> {
 
   _initCamera() async {
     final cameras = await availableCameras();
-    final front = cameras.firstWhere((camera) => camera.lensDirection == CameraLensDirection.front);
+    final front = cameras.firstWhere(
+        (camera) => camera.lensDirection == CameraLensDirection.front);
     _cameraController = CameraController(front, ResolutionPreset.max);
     await _cameraController.initialize();
     setState(() => _isLoading = false);
@@ -47,7 +47,7 @@ class _CameraPageState extends State<CameraPage> {
       File(file.path).deleteSync();
       // final route = MaterialPageRoute(
       //   fullscreenDialog: true,
-      //   builder: (_) => VideoPage(filePath: '/sdcard/Downloads/abc.mp4'),
+      //   builder: (_) => VideoPage(filePath: 'sdcard/Downloads/abc.mp4'),
       // );
       // Navigator.push(context, route);
     } else {

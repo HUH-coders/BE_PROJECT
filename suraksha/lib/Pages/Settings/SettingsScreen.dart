@@ -4,8 +4,8 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:suraksha/Pages/Authentication/login.dart';
 import 'package:suraksha/Pages/Dashboard/widgets/timerAlertDialogue.dart';
 import 'package:suraksha/Pages/Settings/changePin.dart';
-import 'package:suraksha/Services/GenerateAlert.dart';
-// import 'package:suraksha/Services/AudioRecording.dart';
+// import 'package:suraksha/Services/GenerateAlert.dart';
+import 'package:suraksha/Services/AudioRecording.dart';
 import 'package:suraksha/Services/auth.dart';
 import 'package:workmanager/workmanager.dart';
 // import 'package:womensafteyhackfair/main.dart';
@@ -184,10 +184,13 @@ class _SettingsScreenState extends State<SettingsScreen> {
           ),
           GestureDetector(
               onTap: () {
-                backgroundVideoRecording();
+                Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                        builder: (context) => AudioRecorder(title: "Audio")));
               },
               child: ListTile(
-                  title: Text("Video Record"),
+                  title: Text("Audio Recognition"),
                   leading: CircleAvatar(
                       backgroundColor: Colors.grey[200],
                       child: Center(

@@ -7,6 +7,7 @@ import 'package:permission_handler/permission_handler.dart';
 import 'package:path/path.dart' as path;
 import 'package:assets_audio_player/assets_audio_player.dart';
 import 'package:intl/intl.dart' show DateFormat;
+import 'package:suraksha/model.dart';
 
 class AudioRecorder extends StatefulWidget {
   AudioRecorder({Key? key, required this.title}) : super(key: key);
@@ -31,7 +32,7 @@ class _AudioRecorderState extends State<AudioRecorder> {
   }
 
   void startIt() async {
-    filePath = '/sdcard/Downloads/temp2.wav';
+    filePath = 'sdcard/Downloads/temp2.wav';
     _myRecorder = FlutterSoundRecorder();
 
     await _myRecorder.openAudioSession(
@@ -156,7 +157,10 @@ class _AudioRecorderState extends State<AudioRecorder> {
 
   Future<String?> stopRecord() async {
     _myRecorder.closeAudioSession();
-    return await _myRecorder.stopRecorder();
+    String? res = await _myRecorder.stopRecorder();
+    print(filePath);
+    getResult(filePath);
+    return res;
   }
 
   Future<void> startPlaying() async {
