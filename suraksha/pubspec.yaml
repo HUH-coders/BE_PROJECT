@@ -67,6 +67,8 @@ dependencies:
   flutter_local_notifications: ^9.4.0
   android_alarm_manager_plus: ^2.0.5
   tflite_audio: ^0.3.0
+  speech_to_text: ^5.4.3
+
 
 
 dev_dependencies:

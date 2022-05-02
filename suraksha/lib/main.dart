@@ -23,14 +23,7 @@ void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   initializeService();
   await Firebase.initializeApp();
-  SharedPreferences prefs = await SharedPreferences.getInstance();
-  String? email = prefs.getString('userEmail');
-  if (email == null || email == '') {
-    prefs.setBool('isLoggedIn', false);
-    prefs.setString('userEmail', '');
-    prefs.setBool('alertFlag', true);
-    prefs.setBool("showManual", false);
-  }
+  await setVariables();
 
   Workmanager().initialize(
     callbackDispatcher,
@@ -39,19 +32,14 @@ void main() async {
   await AndroidAlarmManager.initialize();
 
   runApp(MyApp());
-  print("heyya");
-  // if (email != null) {
-  //   await AndroidAlarmManager.periodic(
-  //       const Duration(seconds: 15), 0, fetchLocation);
-  // }
 
-  TfliteAudio.loadModel(
-      model: 'assets/Rakshak_model.tflite',
-      label: 'assets/Rakshak_model_labels.txt',
-      inputType: 'decodedWav');
+  // TfliteAudio.loadModel(
+  //     model: 'assets/Rakshak_model.tflite',
+  //     label: 'assets/Rakshak_model_labels.txt',
+  //     inputType: 'decodedWav');
 }
 
-void fetchLocation() async {
+Future<void> setVariables() async {
   print("here");
   Position _locationData = await Geolocator.getCurrentPosition();
 
@@ -59,8 +47,17 @@ void fetchLocation() async {
   String b = _locationData.longitude.toString();
 
   SharedPreferences prefs = await SharedPreferences.getInstance();
-  prefs.setStringList('location', [a, b]);
+
   print(a + "\t" + b);
+
+  String? email = prefs.getString('userEmail');
+  if (email == null || email == '') {
+    prefs.setBool('isLoggedIn', false);
+    prefs.setString('userEmail', '');
+    prefs.setBool('alertFlag', true);
+    prefs.setBool("showManual", false);
+  }
+  prefs.setStringList('location', [a, b]);
 }
 
 void callBack(String tag) async {
@@ -107,18 +104,15 @@ void callbackDispatcher() {
 }
 
 Future<void> sendLocationMessage(contacts) async {
-  print("heyyyyayayyayyaayyay");
-  Position _locationData = await Geolocator.getCurrentPosition();
-  print("hshsh");
-  print(_locationData);
+  SharedPreferences prefs = await SharedPreferences.getInstance();
+  List<String>? _locationData = prefs.getStringList('location');
+  String a = _locationData![0];
+  String b = _locationData[1];
 
-  String a = _locationData.latitude.toString();
-  String b = _locationData.longitude.toString();
-
-  print(a + b);
   String link = "http://maps.google.com/?q=$a,$b";
+  print(contacts);
+  print(link);
   for (String contact in contacts) {
-    print(contact);
     Telephony.backgroundInstance
         .sendSms(to: contact, message: "I am on my way! Track me here.\n$link");
   }

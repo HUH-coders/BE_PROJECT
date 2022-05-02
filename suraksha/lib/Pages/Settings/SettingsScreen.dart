@@ -6,6 +6,7 @@ import 'package:suraksha/Pages/Dashboard/widgets/timerAlertDialogue.dart';
 import 'package:suraksha/Pages/Settings/changePin.dart';
 // import 'package:suraksha/Services/GenerateAlert.dart';
 import 'package:suraksha/Services/AudioRecording.dart';
+import 'package:suraksha/Services/Speech_to_text.dart';
 import 'package:suraksha/Services/auth.dart';
 import 'package:workmanager/workmanager.dart';
 // import 'package:womensafteyhackfair/main.dart';
@@ -187,7 +188,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 Navigator.push(
                     context,
                     MaterialPageRoute(
-                        builder: (context) => AudioRecorder(title: "Audio")));
+                        builder: (context) => SpeechRecognition()));
               },
               child: ListTile(
                   title: Text("Audio Recognition"),
