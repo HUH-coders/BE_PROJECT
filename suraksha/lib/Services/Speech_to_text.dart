@@ -13,6 +13,7 @@ class _SpeechRecognitionState extends State<SpeechRecognition> {
   SpeechToText _speechToText = SpeechToText();
   bool _speechEnabled = false;
   String _lastWords = '';
+  bool _isListening = false;
 
   @override
   void initState() {
@@ -20,25 +21,23 @@ class _SpeechRecognitionState extends State<SpeechRecognition> {
     _initSpeech();
   }
 
-  /// This has to happen only once per app
   void _initSpeech() async {
     _speechEnabled = await _speechToText.initialize();
     setState(() {});
   }
 
-  /// Each time to start a speech recognition session
   void _startListening() async {
     await _speechToText.listen(onResult: _onSpeechResult);
-    setState(() {});
+    setState(() {
+      _isListening = true;
+    });
   }
 
-  /// Manually stop the active speech recognition session
-  /// Note that there are also timeouts that each platform enforces
-  /// and the SpeechToText plugin supports setting timeouts on the
-  /// listen method.
   void _stopListening() async {
     await _speechToText.stop();
-    setState(() {});
+    setState(() {
+      _isListening = false;
+    });
   }
 
   /// This is the callback that the SpeechToText plugin calls when
@@ -47,6 +46,13 @@ class _SpeechRecognitionState extends State<SpeechRecognition> {
     setState(() {
       _lastWords = result.recognizedWords;
     });
+    List<String> ls = _lastWords.split(" ");
+    if (ls.contains("help")) {
+      print("Trigger word found!!");
+    }
+    if (_isListening) {
+      _startListening();
+    }
   }
 
   @override
@@ -70,13 +76,8 @@ class _SpeechRecognitionState extends State<SpeechRecognition> {
               child: Container(
                 padding: EdgeInsets.all(16),
                 child: Text(
-                  // If listening is active show the recognized words
                   _speechToText.isListening
                       ? '$_lastWords'
-                      // If listening isn't active but could be tell the user
-                      // how to start it, otherwise indicate that speech
-                      // recognition is not yet ready or not supported on
-                      // the target device
                       : _speechEnabled
                           ? 'Tap the microphone to start listening...'
                           : 'Speech not available',
@@ -87,11 +88,14 @@ class _SpeechRecognitionState extends State<SpeechRecognition> {
         ),
       ),
       floatingActionButton: FloatingActionButton(
-        onPressed:
-            // If not yet listening for speech start, otherwise stop
-            _speechToText.isNotListening ? _startListening : _stopListening,
+        onPressed: () {
+          setState(() {
+            _isListening = !_isListening;
+          });
+          _speechToText.isNotListening ? _startListening() : _stopListening();
+        },
         tooltip: 'Listen',
-        child: Icon(_speechToText.isNotListening ? Icons.mic_off : Icons.mic),
+        child: Icon(_speechToText.isListening ? Icons.mic : Icons.mic_off),
       ),
     );
   }

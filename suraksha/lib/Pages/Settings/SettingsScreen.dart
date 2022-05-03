@@ -1,11 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_background_service/flutter_background_service.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:suraksha/Pages/Authentication/login.dart';
 import 'package:suraksha/Pages/Dashboard/widgets/timerAlertDialogue.dart';
 import 'package:suraksha/Pages/Settings/changePin.dart';
 // import 'package:suraksha/Services/GenerateAlert.dart';
-import 'package:suraksha/Services/AudioRecording.dart';
+// import 'package:suraksha/Services/AudioRecording.dart';
 import 'package:suraksha/Services/Speech_to_text.dart';
 import 'package:suraksha/Services/auth.dart';
 import 'package:workmanager/workmanager.dart';
@@ -219,6 +220,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
           GestureDetector(
               onTap: () {
                 Workmanager().cancelByTag("3");
+                Workmanager().cancelByTag("4");
+                Fluttertoast.showToast(msg: "Alerts Canceled");
               },
               child: ListTile(
                   title: Text("Stop Alerts"),

@@ -1,7 +1,9 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_background_service/flutter_background_service.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 import 'package:geolocator/geolocator.dart';
+import 'package:suraksha/Helpers/overlay.dart';
 import 'package:suraksha/Pages/Dashboard/dashboard.dart';
 import 'package:suraksha/Pages/splash.dart';
 import 'package:firebase_core/firebase_core.dart';
@@ -9,7 +11,6 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:shake/shake.dart';
 import 'package:suraksha/Services/GenerateAlert.dart';
 import 'package:telephony/telephony.dart';
-import 'package:tflite_audio/tflite_audio.dart';
 import 'package:workmanager/workmanager.dart';
 import 'package:perfect_volume_control/perfect_volume_control.dart';
 import 'package:system_alert_window/system_alert_window.dart';
@@ -39,16 +40,35 @@ void main() async {
   //     inputType: 'decodedWav');
 }
 
-Future<void> setVariables() async {
-  print("here");
+Future<Position> getLocation() async {
+  LocationPermission permission;
+
+// Test if location services are enabled.
+  bool _ = await Geolocator.isLocationServiceEnabled();
+
+  permission = await Geolocator.checkPermission();
+  if (permission == LocationPermission.denied) {
+    permission = await Geolocator.requestPermission();
+    if (permission == LocationPermission.denied) {
+      return Future.error('Location permissions are denied');
+    }
+  }
+
+  if (permission == LocationPermission.deniedForever) {
+    return Future.error(
+        'Location permissions are permanently denied, we cannot request permissions.');
+  }
   Position _locationData = await Geolocator.getCurrentPosition();
+  return _locationData;
+}
+
+Future<void> setVariables() async {
+  Position _locationData = await getLocation();
 
   String a = _locationData.latitude.toString();
   String b = _locationData.longitude.toString();
 
   SharedPreferences prefs = await SharedPreferences.getInstance();
-
-  print(a + "\t" + b);
 
   String? email = prefs.getString('userEmail');
   if (email == null || email == '') {
@@ -60,13 +80,14 @@ Future<void> setVariables() async {
   prefs.setStringList('location', [a, b]);
 }
 
-void callBack(String tag) async {
+Future<void> callBack(String tag) async {
   WidgetsFlutterBinding.ensureInitialized();
   if (tag == "cancel_alert") {
     print(tag);
+    Fluttertoast.showToast(msg: "Alert not Generated");
     SharedPreferences prefs = await SharedPreferences.getInstance();
-    prefs.setBool('alertFlag', false);
     SystemAlertWindow.closeSystemWindow(prefMode: SystemWindowPrefMode.OVERLAY);
+    await prefs.setBool('alertFlag', false);
   }
 }
 
@@ -110,8 +131,6 @@ Future<void> sendLocationMessage(contacts) async {
   String b = _locationData[1];
 
   String link = "http://maps.google.com/?q=$a,$b";
-  print(contacts);
-  print(link);
   for (String contact in contacts) {
     Telephony.backgroundInstance
         .sendSms(to: contact, message: "I am on my way! Track me here.\n$link");
@@ -120,7 +139,6 @@ Future<void> sendLocationMessage(contacts) async {
 
 Future<void> sendVideoMessage(contacts, link) async {
   for (String contact in contacts) {
-    print(contact);
     try {
       await Telephony.backgroundInstance.sendSms(
         to: contact,
@@ -169,8 +187,6 @@ Future<void> onStart() async {
   WidgetsFlutterBinding.ensureInitialized();
   final service = FlutterBackgroundService();
 
-  // SharedPreferences prefs = await SharedPreferences.getInstance();
-
   service.onDataReceived.listen((event) async {
     if (event!["action"] == "setAsForeground") {
       service.setForegroundMode(true);
@@ -184,29 +200,8 @@ Future<void> onStart() async {
     }
   });
 
-  // await BackgroundLocation.setAndroidNotification(
-  //   title: "Location tracking is running in the background!",
-  //   message: "You can turn it off from settings menu inside the app",
-  //   icon: '@mipmap/ic_logo',
-  // );
-  // BackgroundLocation.startLocationService(
-  //   distanceFilter: 20,
-  // );
-
-  // BackgroundLocation.getLocationUpdates((location) {
-  //   print(location);
-  //   prefs.setStringList("location",
-  //       [location.latitude.toString(), location.longitude.toString()]);
-  // });
   String screenShake = "Be strong, We are with you!";
-  ShakeDetector.autoStart(
-      shakeThresholdGravity: 8,
-      shakeSlopTimeMS: 500,
-      onPhoneShake: () async {
-        print("Test");
-      });
-  print("Nothing");
-  // bring to foreground
+
   service.setForegroundMode(true);
   Timer.periodic(Duration(seconds: 1), (timer) async {
     if (!(await service.isServiceRunning())) timer.cancel();
@@ -259,7 +254,6 @@ class _MyAppState extends State<MyApp> {
     });
     PerfectVolumeControl.stream.listen((volume) {
       if (volume != currentvol) {
-        print("\n\n Volume key pressed\n\n");
         keyPressCount++;
         print(keyPressCount);
         if (keyPressCount == 3) {
@@ -286,8 +280,7 @@ class _MyAppState extends State<MyApp> {
 
   Future<void> _startTimer() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
-
-    _counter = 10;
+    _counter = 15;
     if (_timer != null) {
       _timer!.cancel();
     }
@@ -299,7 +292,6 @@ class _MyAppState extends State<MyApp> {
         SystemAlertWindow.closeSystemWindow(
             prefMode: SystemWindowPrefMode.OVERLAY);
         bool? alertFlag = prefs.getBool('alertFlag');
-        print(alertFlag);
         if (alertFlag == true) {
           print("Generating Alert");
           generateAlert();
@@ -314,62 +306,18 @@ class _MyAppState extends State<MyApp> {
   Future<void> _requestPermissions() async {
     await SystemAlertWindow.requestPermissions(
         prefMode: SystemWindowPrefMode.OVERLAY);
-    // LocationPermission permission = await Geolocator.checkPermission();
-    // print(permission);
-    // permission = await Geolocator.requestPermission();
-    // final Telephony telephony = Telephony.instance;
-    // bool? permissionsGranted = await telephony.requestPhoneAndSmsPermissions;
-    // print(permissionsGranted);
+    final Telephony telephony = Telephony.instance;
+    bool? permissionsGranted = await telephony.requestPhoneAndSmsPermissions;
+    print(permissionsGranted);
   }
 
   void _showOverlayWindow() {
-    SystemWindowHeader header = SystemWindowHeader(
-        title: SystemWindowText(
-            text: "Cancel Alert", fontSize: 15, textColor: Colors.black45),
-        padding: SystemWindowPadding.setSymmetricPadding(12, 12),
-        buttonPosition: ButtonPosition.TRAILING);
-    SystemWindowBody body = SystemWindowBody(
-      rows: [
-        EachRow(
-          columns: [
-            EachColumn(
-              text: SystemWindowText(
-                  text: 'Tap \"Cancel\" immediately to cancel the alert ',
-                  fontSize: 12,
-                  textColor: Colors.black45),
-            )
-          ],
-          gravity: ContentGravity.CENTER,
-        ),
-      ],
-      padding: SystemWindowPadding(left: 16, right: 16, bottom: 12, top: 12),
-    );
-    SystemWindowFooter footer = SystemWindowFooter(
-        buttons: [
-          SystemWindowButton(
-            text: SystemWindowText(
-                text: "Cancel Alert", fontSize: 12, textColor: Colors.white),
-            tag: "cancel_alert",
-            width: 0,
-            padding:
-                SystemWindowPadding(left: 10, right: 10, bottom: 10, top: 10),
-            height: SystemWindowButton.WRAP_CONTENT,
-            decoration: SystemWindowDecoration(
-                startColor: Color.fromRGBO(250, 139, 97, 1),
-                endColor: Color.fromRGBO(247, 28, 88, 1),
-                borderWidth: 0,
-                borderRadius: 30.0),
-          )
-        ],
-        padding: SystemWindowPadding(left: 16, right: 16, bottom: 12),
-        decoration: SystemWindowDecoration(startColor: Colors.white),
-        buttonsPosition: ButtonPosition.CENTER);
     SystemAlertWindow.showSystemWindow(
         height: 230,
-        header: header,
-        body: body,
-        footer: footer,
-        margin: SystemWindowMargin(left: 8, right: 8, top: 200, bottom: 0),
+        header: overlayheader,
+        body: overlaybody,
+        footer: overlaayfooter,
+        margin: SystemWindowMargin(left: 10, right: 10, top: 200, bottom: 0),
         gravity: SystemWindowGravity.TOP,
         prefMode: SystemWindowPrefMode.OVERLAY);
   }

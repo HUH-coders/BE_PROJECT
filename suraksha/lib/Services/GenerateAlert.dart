@@ -1,7 +1,6 @@
 import 'dart:io';
 import 'dart:typed_data';
 import 'package:cloud_firestore/cloud_firestore.dart';
-// import 'package:geolocator/geolocator.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:suraksha/Models/EmergencyContact.dart';
 import 'package:suraksha/Services/UserService.dart';
@@ -46,17 +45,14 @@ Future<void> sendLocationPeriodically() async {
   for (EmergencyContact i in ecs) {
     contacts.add(i.phoneno);
   }
-  // update this link with the current location
-  String link2 = "http://maps.google.com/";
-  print(link2);
+  List<String>? _locationData = prefs.getStringList('location');
+  String a = _locationData![0];
+  String b = _locationData[1];
+  String link = "http://maps.google.com/?q=$a,$b";
   try {
-    print("Inside try");
-    final prefs = await SharedPreferences.getInstance();
-    String? email = prefs.getString('userEmail');
-    print(email);
     final CollectionReference userRef =
         FirebaseFirestore.instance.collection('user');
-    await userRef.doc(email).update({"last_location": link2});
+    await userRef.doc(email).update({"last_location": link});
     await userRef.doc(email).update({"time": FieldValue.serverTimestamp()});
   } catch (e) {
     print(e);
@@ -64,7 +60,7 @@ Future<void> sendLocationPeriodically() async {
   Workmanager().registerPeriodicTask("3", 'sendLocation',
       tag: "3",
       inputData: {"contacts": contacts},
-      frequency: Duration(minutes: 3));
+      frequency: Duration(minutes: 15));
 }
 
 Future<void> sendVideo(link) async {
@@ -123,7 +119,6 @@ Future<void> backgroundVideoRecording() async {
 }
 
 Future uploadFile(file) async {
-  print("abcdddddddddddddddddddddddddd");
   UploadTask? task;
   if (file == null) return;
 
@@ -131,8 +126,6 @@ Future uploadFile(file) async {
   final destination = 'files/$fileName';
 
   task = FirebaseApi.uploadFile(destination, file!);
-  // setState(() {});
-
   if (task == null) return;
 
   final snapshot = await task.whenComplete(() {});
@@ -140,30 +133,15 @@ Future uploadFile(file) async {
 
   print('Download-Link: $urlDownload');
   sendVideo(urlDownload);
-  // List<String> emails = [];
-  // final prefs = await SharedPreferences.getInstance();
-  // String? email = prefs.getString('userEmail');
-  // List<EmergencyContact> ecs = await getUserContacts(email!);
-  // for (EmergencyContact i in ecs) {
-  //   emails.add(i.email);
-  // }
-  // for (email in emails) {
-  //   sendMail(email, urlDownload);
-  // }
 }
 
 Future<void> generateAlert() async {
   print("Alerttttt");
-  await sendLocationPeriodically();
+  // await sendLocationPeriodically();
   // await backgroundVideoRecording();
   FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
       FlutterLocalNotificationsPlugin();
   var androidSettings = AndroidInitializationSettings('suraksha_icon');
-  // var iOSSettings = IOSInitializationSettings(
-  //     requestSoundPermission: false,
-  //     requestBadgePermission: false,
-  //     requestAlertPermission: false,
-  // );
   var initSetttings = InitializationSettings(android: androidSettings);
 
   await flutterLocalNotificationsPlugin.initialize(
