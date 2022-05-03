@@ -24,7 +24,7 @@ void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   initializeService();
   await Firebase.initializeApp();
-  await setVariables();
+  // await setVariables();
 
   Workmanager().initialize(
     callbackDispatcher,

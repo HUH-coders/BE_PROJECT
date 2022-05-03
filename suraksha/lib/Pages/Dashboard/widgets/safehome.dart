@@ -7,12 +7,15 @@ import 'package:fluttertoast/fluttertoast.dart';
 import 'package:lottie/lottie.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:suraksha/Models/EmergencyContact.dart';
+import 'package:suraksha/Services/GenerateAlert.dart';
 import 'package:suraksha/Services/UserService.dart';
 import 'package:flutter_sound/flutter_sound.dart';
 import 'package:intl/date_symbol_data_local.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:path/path.dart' as path;
 import 'package:assets_audio_player/assets_audio_player.dart';
+import 'package:speech_to_text/speech_recognition_result.dart';
+import 'package:speech_to_text/speech_to_text.dart';
 
 class SafeHome extends StatefulWidget {
   const SafeHome({Key? key}) : super(key: key);
@@ -28,6 +31,7 @@ class _SafeHomeState extends State<SafeHome> {
   bool getHomeSafeActivated = false;
   List<String> numbers = [];
 
+  
   checkGetHomeActivated() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
 
@@ -55,7 +59,51 @@ class _SafeHomeState extends State<SafeHome> {
     super.initState();
     startIt();
     checkGetHomeActivated();
+    _initSpeech();
   }
+
+  SpeechToText _speechToText = SpeechToText();
+  bool _speechEnabled = false;
+  String _lastWords = '';
+  bool _isListening = false;
+
+  void _initSpeech() async {
+    _speechEnabled = await _speechToText.initialize();
+    setState(() {});
+  }
+
+  void _startListening() async {
+    await _speechToText.listen(onResult: _onSpeechResult);
+    setState(() {
+      _isListening = true;
+    });
+  }
+
+  void _stopListening() async {
+    await _speechToText.stop();
+    setState(() {
+      _isListening = false;
+    });
+  }
+
+  /// This is the callback that the SpeechToText plugin calls when
+  /// the platform returns recognized words.
+  void _onSpeechResult(SpeechRecognitionResult result) {
+    setState(() {
+      _lastWords = result.recognizedWords;
+    });
+    List<String> ls = _lastWords.split(" ");
+    if (ls.contains("help") || ls.contains("bachao")) {
+      print("Trigger word found!!");
+      // generateAlert();
+      print("Alert generated");
+    }
+    if (_isListening) {
+      _startListening();
+    }
+  }
+
+
 
   void startIt() async {
     filePath = 'sdcard/Downloads/temp3.wav';
@@ -194,17 +242,23 @@ class _SafeHomeState extends State<SafeHome> {
                           if (getHomeActivated) {
                             changeStateOfHomeSafe(true);
                             print("Activated.........");
-                            record();
+                            setState(() {
+                              _isListening = !_isListening;
+                            });
+                            _speechToText.isNotListening ? _startListening() : _stopListening();
+                            // record();
                           } else {
                             changeStateOfHomeSafe(false);
                             print("DEActivated.........");
-                            stopRecord();
+                            // stopRecord();
+                            _stopListening();
                           }
                         },
                         subtitle: Text(
                             "Your location will be shared with all of your contacts every 15 minutes & your audio will be monitored"),
                       )),
                 ],
+                
               ),
             );
           });
