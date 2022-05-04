@@ -1,5 +1,4 @@
 import 'dart:math';
-
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:showcaseview/showcaseview.dart';
@@ -135,7 +134,8 @@ class _HomeState extends State<Home> {
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
                           const Padding(
-                              padding: EdgeInsets.all(8.0),
+                              padding: EdgeInsets.only(
+                                  left: 8.0, right: 8.0, bottom: 8.0),
                               child: Text("Emergency",
                                   style: TextStyle(
                                       fontWeight: FontWeight.bold,

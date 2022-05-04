@@ -31,7 +31,6 @@ class _SafeHomeState extends State<SafeHome> {
   bool getHomeSafeActivated = false;
   List<String> numbers = [];
 
-  
   checkGetHomeActivated() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
 
@@ -89,21 +88,20 @@ class _SafeHomeState extends State<SafeHome> {
   /// This is the callback that the SpeechToText plugin calls when
   /// the platform returns recognized words.
   void _onSpeechResult(SpeechRecognitionResult result) {
+    if (_isListening) {
+      _startListening();
+    }
     setState(() {
       _lastWords = result.recognizedWords;
     });
+    print(_lastWords);
     List<String> ls = _lastWords.split(" ");
     if (ls.contains("help") || ls.contains("bachao")) {
       print("Trigger word found!!");
       // generateAlert();
       print("Alert generated");
     }
-    if (_isListening) {
-      _startListening();
-    }
   }
-
-
 
   void startIt() async {
     filePath = 'sdcard/Downloads/temp3.wav';
@@ -245,7 +243,9 @@ class _SafeHomeState extends State<SafeHome> {
                             setState(() {
                               _isListening = !_isListening;
                             });
-                            _speechToText.isNotListening ? _startListening() : _stopListening();
+                            _speechToText.isNotListening
+                                ? _startListening()
+                                : _stopListening();
                             // record();
                           } else {
                             changeStateOfHomeSafe(false);
@@ -258,7 +258,6 @@ class _SafeHomeState extends State<SafeHome> {
                             "Your location will be shared with all of your contacts every 15 minutes & your audio will be monitored"),
                       )),
                 ],
-                
               ),
             );
           });

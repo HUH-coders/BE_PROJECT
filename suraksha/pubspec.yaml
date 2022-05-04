@@ -68,6 +68,7 @@ dependencies:
   android_alarm_manager_plus: ^2.0.5
   tflite_audio: ^0.3.0
   speech_to_text: ^5.4.3
+  background_stt: ^1.0.6
 
 
 

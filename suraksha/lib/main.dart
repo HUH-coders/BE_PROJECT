@@ -17,14 +17,11 @@ import 'package:system_alert_window/system_alert_window.dart';
 import 'package:showcaseview/showcaseview.dart';
 import 'package:android_alarm_manager_plus/android_alarm_manager_plus.dart';
 
-// import 'package:mailer/mailer.dart';
-// import 'package:mailer/smtp_server.dart';
-
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   initializeService();
   await Firebase.initializeApp();
-  // await setVariables();
+  await setVariables();
 
   Workmanager().initialize(
     callbackDispatcher,
