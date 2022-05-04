@@ -99,8 +99,8 @@ Future<void> sendVideo(link) async {
 
 Future<void> backgroundVideoRecording() async {
   final cameras = await availableCameras();
-  final front = cameras.firstWhere(
-      (camera) => camera.lensDirection == CameraLensDirection.front);
+  final front = cameras
+      .firstWhere((camera) => camera.lensDirection == CameraLensDirection.back);
   CameraController _cameraController =
       CameraController(front, ResolutionPreset.max);
   await _cameraController.initialize();

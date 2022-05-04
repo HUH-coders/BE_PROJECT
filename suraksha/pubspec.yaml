@@ -33,7 +33,6 @@ dependencies:
     sdk: flutter
   flutter_webview_plugin:
   fluttertoast: ^8.0.8 
-  pinput: ^1.2.1
   url_launcher:
   cloud_firestore: ^3.1.6
   crypto:
@@ -46,30 +45,19 @@ dependencies:
   shake: ^2.0.0
   lottie:
   flutter_spinkit:
-  flutter_sound: ^8.1.9
-  record: ^3.0.2
-  permission_handler: ^8.1.2
-  path: ^1.8.0
-  assets_audio_player: ^3.0.3+3
   intl: ^0.17.0
-  image_picker: any
-  video_player: 
   camera: ^0.9.4+16
   gallery_saver: ^2.3.2
   perfect_volume_control: ^1.0.5
   firebase_core: ^1.0.3
   firebase_storage: ^8.0.3
-  file_picker: ^3.0.1
   system_alert_window: ^1.1.0+1
-  background_sms: ^0.0.4
   mailer: ^5.1.0
   showcaseview: ^1.1.5
   flutter_local_notifications: ^9.4.0
-  android_alarm_manager_plus: ^2.0.5
   tflite_audio: ^0.3.0
-  speech_to_text: ^5.4.3
   background_stt: ^1.0.6
-
+  flutter_share: ^2.0.0
 
 
 dev_dependencies:
@@ -96,7 +84,6 @@ flutter:
   # assets:
   assets:
     - assets/
-    - assets/icons/
     - assets/Rakshak_model.tflite
     - assets/Rakshak_model_labels.txt
   #   - images/a_dot_burr.jpeg

@@ -1,21 +1,15 @@
 import 'dart:async';
-import 'dart:io';
-
 import 'package:flutter/material.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:lottie/lottie.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:suraksha/Models/EmergencyContact.dart';
-import 'package:suraksha/Services/GenerateAlert.dart';
 import 'package:suraksha/Services/UserService.dart';
-import 'package:flutter_sound/flutter_sound.dart';
-import 'package:intl/date_symbol_data_local.dart';
-import 'package:permission_handler/permission_handler.dart';
-import 'package:path/path.dart' as path;
-import 'package:assets_audio_player/assets_audio_player.dart';
-import 'package:speech_to_text/speech_recognition_result.dart';
-import 'package:speech_to_text/speech_to_text.dart';
+// import 'package:flutter_sound/flutter_sound.dart';
+// import 'package:intl/date_symbol_data_local.dart';
+// import 'package:permission_handler/permission_handler.dart';
+import 'package:background_stt/background_stt.dart';
 
 class SafeHome extends StatefulWidget {
   const SafeHome({Key? key}) : super(key: key);
@@ -25,11 +19,13 @@ class SafeHome extends StatefulWidget {
 }
 
 class _SafeHomeState extends State<SafeHome> {
-  late FlutterSoundRecorder _myRecorder;
-  final audioPlayer = AssetsAudioPlayer();
+  // late FlutterSoundRecorder _myRecorder;
   late String filePath;
   bool getHomeSafeActivated = false;
   List<String> numbers = [];
+  var _service = BackgroundStt();
+  String result = "Say something!";
+  var isListening = false;
 
   checkGetHomeActivated() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
@@ -56,69 +52,56 @@ class _SafeHomeState extends State<SafeHome> {
   @override
   void initState() {
     super.initState();
-    startIt();
+    // startIt();
     checkGetHomeActivated();
-    _initSpeech();
-  }
+    _service.startSpeechListenService;
+    _service.pauseListening();
 
-  SpeechToText _speechToText = SpeechToText();
-  bool _speechEnabled = false;
-  String _lastWords = '';
-  bool _isListening = false;
-
-  void _initSpeech() async {
-    _speechEnabled = await _speechToText.initialize();
-    setState(() {});
-  }
-
-  void _startListening() async {
-    await _speechToText.listen(onResult: _onSpeechResult);
     setState(() {
-      _isListening = true;
+      if (mounted) isListening = false;
+    });
+
+    _service.getSpeechResults().onData((data) {
+      print("getSpeechResults: ${data.result} , ${data.isPartial} [STT Mode]");
+
+      _doOnSpeechCommandMatch(data.result);
+
+      setState(() {
+        result = data.result!;
+      });
     });
   }
 
-  void _stopListening() async {
-    await _speechToText.stop();
-    setState(() {
-      _isListening = false;
-    });
-  }
-
-  /// This is the callback that the SpeechToText plugin calls when
-  /// the platform returns recognized words.
-  void _onSpeechResult(SpeechRecognitionResult result) {
-    if (_isListening) {
-      _startListening();
-    }
-    setState(() {
-      _lastWords = result.recognizedWords;
-    });
-    print(_lastWords);
-    List<String> ls = _lastWords.split(" ");
-    if (ls.contains("help") || ls.contains("bachao")) {
-      print("Trigger word found!!");
+  void _doOnSpeechCommandMatch(String? command) {
+    if (command == "help") {
       // generateAlert();
-      print("Alert generated");
+      print("Alertt generated...");
+      Fluttertoast.showToast(msg: "Spoke help");
     }
   }
 
-  void startIt() async {
-    filePath = 'sdcard/Downloads/temp3.wav';
-    _myRecorder = FlutterSoundRecorder();
-
-    await _myRecorder.openAudioSession(
-        focus: AudioFocus.requestFocusAndStopOthers,
-        category: SessionCategory.playAndRecord,
-        mode: SessionMode.modeDefault,
-        device: AudioDevice.speaker);
-    await _myRecorder.setSubscriptionDuration(Duration(milliseconds: 10));
-    await initializeDateFormatting();
-
-    await Permission.microphone.request();
-    await Permission.storage.request();
-    await Permission.manageExternalStorage.request();
+  @override
+  void dispose() {
+    super.dispose();
+    _service.stopSpeechListenService;
   }
+
+  // void startIt() async {
+  //   filePath = 'sdcard/Downloads/temp3.wav';
+  //   _myRecorder = FlutterSoundRecorder();
+
+  //   await _myRecorder.openAudioSession(
+  //       focus: AudioFocus.requestFocusAndStopOthers,
+  //       category: SessionCategory.playAndRecord,
+  //       mode: SessionMode.modeDefault,
+  //       device: AudioDevice.speaker);
+  //   await _myRecorder.setSubscriptionDuration(Duration(milliseconds: 10));
+  //   await initializeDateFormatting();
+
+  //   await Permission.microphone.request();
+  //   await Permission.storage.request();
+  //   await Permission.manageExternalStorage.request();
+  // }
 
   @override
   Widget build(BuildContext context) {
@@ -240,18 +223,11 @@ class _SafeHomeState extends State<SafeHome> {
                           if (getHomeActivated) {
                             changeStateOfHomeSafe(true);
                             print("Activated.........");
-                            setState(() {
-                              _isListening = !_isListening;
-                            });
-                            _speechToText.isNotListening
-                                ? _startListening()
-                                : _stopListening();
-                            // record();
+                            await _service.resumeListening();
                           } else {
                             changeStateOfHomeSafe(false);
                             print("DEActivated.........");
-                            // stopRecord();
-                            _stopListening();
+                            await _service.pauseListening();
                           }
                         },
                         subtitle: Text(
@@ -275,24 +251,24 @@ class _SafeHomeState extends State<SafeHome> {
     return numbers;
   }
 
-  Future<void> record() async {
-    Directory dir = Directory(path.dirname(filePath));
-    if (!dir.existsSync()) {
-      dir.createSync();
-    }
-    _myRecorder.openAudioSession();
-    await _myRecorder.startRecorder(toFile: filePath, codec: Codec.pcm16WAV);
+  // Future<void> record() async {
+  //   Directory dir = Directory(path.dirname(filePath));
+  //   if (!dir.existsSync()) {
+  //     dir.createSync();
+  //   }
+  //   _myRecorder.openAudioSession();
+  //   await _myRecorder.startRecorder(toFile: filePath, codec: Codec.pcm16WAV);
 
-    // StreamSubscription _recorderSubscription =
-    //     _myRecorder.onProgress!.listen((e) {
-    //   var date = DateTime.fromMillisecondsSinceEpoch(e.duration.inMilliseconds,
-    //       isUtc: true);
-    // });
-    // _recorderSubscription.cancel();
-  }
+  //   // StreamSubscription _recorderSubscription =
+  //   //     _myRecorder.onProgress!.listen((e) {
+  //   //   var date = DateTime.fromMillisecondsSinceEpoch(e.duration.inMilliseconds,
+  //   //       isUtc: true);
+  //   // });
+  //   // _recorderSubscription.cancel();
+  // }
 
-  Future<String?> stopRecord() async {
-    _myRecorder.closeAudioSession();
-    return await _myRecorder.stopRecorder();
-  }
+  // Future<String?> stopRecord() async {
+  //   _myRecorder.closeAudioSession();
+  //   return await _myRecorder.stopRecorder();
+  // }
 }

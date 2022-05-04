@@ -21,7 +21,7 @@ class Emergency extends StatelessWidget {
             description: 'Tap to call immediately',
             key: keyList[0],
             child: EmergencyCard(
-                imageName: "assets/icons/alert.png",
+                imageName: "assets/alert.png",
                 title: "Women Helpline",
                 description: "Call 1-0-9-1 for emergencies.",
                 number: "1 -0 -9 -1",
@@ -36,7 +36,7 @@ class Emergency extends StatelessWidget {
               callNum: "102"),
           SizedBox(width: 10),
           EmergencyCard(
-              imageName: "assets/icons/alert.png",
+              imageName: "assets/alert.png",
               title: "Police",
               description: "Any crime related emergency",
               number: "1 -0 -0",

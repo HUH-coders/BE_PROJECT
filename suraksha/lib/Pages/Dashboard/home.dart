@@ -134,14 +134,11 @@ class _HomeState extends State<Home> {
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
                           const Padding(
-                              padding: EdgeInsets.only(
-                                  left: 8.0, right: 8.0, bottom: 8.0),
+                              padding: EdgeInsets.all(8.0),
                               child: Text("Emergency",
                                   style: TextStyle(
                                       fontWeight: FontWeight.bold,
                                       fontSize: 20))),
-                          TextButton(
-                              onPressed: () {}, child: const Text("See More"))
                         ])),
                 Emergency(keyList: [_emergency]),
                 const Padding(

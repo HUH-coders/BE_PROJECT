@@ -48,7 +48,7 @@ class _DashboardState extends State<Dashboard> {
                         Image.asset("assets/alarm.png", height: 24),
                         const Text("STOP")
                       ])
-                    : Image.asset("assets/icons/alert.png", height: 36)),
+                    : Image.asset("assets/alert.png", height: 36)),
         floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
         bottomNavigationBar: BottomAppBar(
             shape: const CircularNotchedRectangle(),

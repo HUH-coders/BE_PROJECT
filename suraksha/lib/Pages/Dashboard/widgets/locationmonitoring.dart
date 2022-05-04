@@ -14,14 +14,15 @@ class LocationMonitoring extends StatefulWidget {
 }
 
 class _LocationMonitoringState extends State<LocationMonitoring> {
-  bool getHomeSafeActivated = false;
+  bool locationMonitoringActivated = false;
   List<String> numbers = [];
 
   checkGetHomeActivated() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
 
     setState(() {
-      getHomeSafeActivated = prefs.getBool("getHomeSafe") ?? false;
+      locationMonitoringActivated =
+          prefs.getBool("locationMonitoring") ?? false;
     });
   }
 
@@ -34,8 +35,8 @@ class _LocationMonitoringState extends State<LocationMonitoring> {
     SharedPreferences prefs = await SharedPreferences.getInstance();
 
     setState(() {
-      getHomeSafeActivated = value;
-      prefs.setBool("getHomeSafe", value);
+      locationMonitoringActivated = value;
+      prefs.setBool("locationMonitoring", value);
     });
   }
 
@@ -51,7 +52,7 @@ class _LocationMonitoringState extends State<LocationMonitoring> {
         padding: const EdgeInsets.symmetric(horizontal: 10.0, vertical: 5),
         child: InkWell(
             onTap: () {
-              showModelSafeHome(getHomeSafeActivated);
+              showModelSafeHome(locationMonitoringActivated);
             },
             child: Card(
                 elevation: 5,
@@ -72,7 +73,7 @@ class _LocationMonitoringState extends State<LocationMonitoring> {
                                 title: Text("Location Monitoring"),
                                 subtitle: Text("Share Location Periodically")),
                             Visibility(
-                                visible: getHomeSafeActivated,
+                                visible: locationMonitoringActivated,
                                 child: Padding(
                                     padding: const EdgeInsets.all(18.0),
                                     child: Row(children: [
@@ -114,7 +115,7 @@ class _LocationMonitoringState extends State<LocationMonitoring> {
                       padding: const EdgeInsets.symmetric(vertical: 10.0),
                       child: Row(children: [
                         Expanded(child: Divider(indent: 20, endIndent: 20)),
-                        Text("Get Home Safe"),
+                        Text("Location Monitoring"),
                         Expanded(child: Divider(indent: 20, endIndent: 20))
                       ])),
                   Container(

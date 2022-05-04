@@ -3,14 +3,9 @@ import 'package:flutter_background_service/flutter_background_service.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:suraksha/Pages/Authentication/login.dart';
-import 'package:suraksha/Pages/Dashboard/widgets/timerAlertDialogue.dart';
-import 'package:suraksha/Pages/Settings/changePin.dart';
-import 'package:suraksha/Services/Speech_to_text.dart';
-// import 'package:suraksha/Services/GenerateAlert.dart';
-// import 'package:suraksha/Services/AudioRecording.dart';
 import 'package:suraksha/Services/auth.dart';
 import 'package:workmanager/workmanager.dart';
-// import 'package:womensafteyhackfair/main.dart';
+import 'package:flutter_share/flutter_share.dart';
 
 class SettingsScreen extends StatefulWidget {
   const SettingsScreen({Key? key}) : super(key: key);
@@ -32,6 +27,14 @@ class _SettingsScreenState extends State<SettingsScreen> {
   void initState() {
     super.initState();
     checkService();
+  }
+
+  Future<void> share() async {
+    await FlutterShare.share(
+        title: 'App share',
+        text: 'Share our app',
+        linkUrl: 'https://www.google.com/',
+        chooserTitle: 'Example Chooser Title');
   }
 
   @override
@@ -63,85 +66,29 @@ class _SettingsScreenState extends State<SettingsScreen> {
       ),
       body: ListView(
         children: [
-          FutureBuilder(
-              future: checkPIN(),
-              builder: (context, snapshot) {
-                if (snapshot.hasData) {
-                  return ListTile(
-                    onTap: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => ChangePinScreen(),
-                        ),
-                      );
-                    },
-                    leading: CircleAvatar(
-                      backgroundColor: Colors.grey[200],
-                      child: Center(
-                        child: Image.asset("assets/pin.png"),
-                      ),
-                    ),
-                    title: Text(snapshot.data == -1111
-                        ? "Create SOS pin"
-                        : "Change SOS pin"),
-                    subtitle:
-                        Text("SOS PIN is required to switch OFF the SOS alert"),
-                    trailing: CircleAvatar(
-                      radius: 7,
-                      backgroundColor:
-                          snapshot.data == -1111 ? Colors.red : Colors.white,
-                      child: Center(
-                        child: Card(
-                            color: snapshot.data == -1111
-                                ? Colors.orange
-                                : Colors.white,
-                            shape: CircleBorder(),
-                            child: SizedBox(
-                              height: 5,
-                              width: 5,
-                            )),
-                      ),
-                    ),
-                  );
-                } else {
-                  return SizedBox();
-                }
-              }),
           Row(
             children: [
               Padding(
-                padding: const EdgeInsets.all(12.0),
+                padding: const EdgeInsets.all(10.0),
                 child: Text(
-                  "Notifications",
+                  "About Us",
                   style: TextStyle(fontSize: 20),
                 ),
               ),
               Expanded(child: Divider())
             ],
           ),
-          SwitchListTile(
-            onChanged: (val) {
-              setState(() {
-                switchValue = val;
-                // controllSafeShake(val);
-              });
-            },
-            value: switchValue,
-            secondary: CircleAvatar(
-              backgroundColor: Colors.grey[200],
+          ListTile(
+            leading: CircleAvatar(
+              backgroundColor: Colors.white,
               child: Center(
                   child: Image.asset(
-                "assets/shake.png",
-                height: 24,
+                "assets/suraksha-logo.png",
+                height: 40,
               )),
             ),
-            title: Text("Safe Shake"),
-            subtitle: Text("Switch ON to listen for device shake"),
-          ),
-          Divider(
-            indent: 40,
-            endIndent: 40,
+            title: Text("Suraksha"),
+            subtitle: Text("Your safety in your hands"),
           ),
           Padding(
             padding: const EdgeInsets.all(18.0),
@@ -162,61 +109,18 @@ class _SettingsScreenState extends State<SettingsScreen> {
               Expanded(child: Divider())
             ],
           ),
-          ListTile(
-            title: Text("About Us"),
-            leading: CircleAvatar(
-              backgroundColor: Colors.grey[200],
-              child: Center(
-                  child: Image.asset(
-                "assets/info.png",
-                height: 24,
-              )),
+          GestureDetector(
+            onTap: () {
+              share();
+            },
+            child: ListTile(
+              title: Text("Share"),
+              leading: CircleAvatar(
+                backgroundColor: Colors.grey[200],
+                child: Center(child: Icon(Icons.share)),
+              ),
             ),
           ),
-          ListTile(
-            title: Text("Share"),
-            leading: CircleAvatar(
-              backgroundColor: Colors.grey[200],
-              child: Center(
-                  child: Image.asset(
-                "assets/share.png",
-                height: 24,
-              )),
-            ),
-          ),
-          GestureDetector(
-              onTap: () {
-                Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                        builder: (context) => SpeechRecognition()));
-              },
-              child: ListTile(
-                  title: Text("Audio Recognition"),
-                  leading: CircleAvatar(
-                      backgroundColor: Colors.grey[200],
-                      child: Center(
-                          child: Icon(
-                        Icons.logout,
-                        size: 24,
-                      ))))),
-          GestureDetector(
-              onTap: () {
-                // Navigator.of(context).popUntil((route) => route.isFirst);
-                Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                        builder: (context) => TimeAlertDialogue()));
-              },
-              child: ListTile(
-                  title: Text("Timer Alert Dialogue"),
-                  leading: CircleAvatar(
-                      backgroundColor: Colors.grey[200],
-                      child: Center(
-                          child: Icon(
-                        Icons.logout,
-                        size: 24,
-                      ))))),
           GestureDetector(
               onTap: () {
                 Workmanager().cancelByTag("3");
@@ -229,7 +133,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                       backgroundColor: Colors.grey[200],
                       child: Center(
                           child: Icon(
-                        Icons.logout,
+                        Icons.do_not_disturb_off,
                         size: 24,
                       ))))),
           GestureDetector(
@@ -248,12 +152,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     child: Icon(
                   Icons.logout,
                   size: 24,
-                )
-                    //   child: Image.asset(
-                    // "assets/share.png",
-                    // height: 24,
-                    // )
-                    ),
+                )),
               ),
             ),
           ),

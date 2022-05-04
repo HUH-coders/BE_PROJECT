@@ -15,7 +15,6 @@ import 'package:workmanager/workmanager.dart';
 import 'package:perfect_volume_control/perfect_volume_control.dart';
 import 'package:system_alert_window/system_alert_window.dart';
 import 'package:showcaseview/showcaseview.dart';
-import 'package:android_alarm_manager_plus/android_alarm_manager_plus.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -27,7 +26,6 @@ void main() async {
     callbackDispatcher,
     isInDebugMode: true,
   );
-  await AndroidAlarmManager.initialize();
 
   runApp(MyApp());
 
