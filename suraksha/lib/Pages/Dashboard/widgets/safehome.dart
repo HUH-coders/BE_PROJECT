@@ -6,9 +6,6 @@ import 'package:lottie/lottie.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:suraksha/Models/EmergencyContact.dart';
 import 'package:suraksha/Services/UserService.dart';
-// import 'package:flutter_sound/flutter_sound.dart';
-// import 'package:intl/date_symbol_data_local.dart';
-// import 'package:permission_handler/permission_handler.dart';
 import 'package:background_stt/background_stt.dart';
 
 class SafeHome extends StatefulWidget {
@@ -19,11 +16,11 @@ class SafeHome extends StatefulWidget {
 }
 
 class _SafeHomeState extends State<SafeHome> {
-  // late FlutterSoundRecorder _myRecorder;
   late String filePath;
   bool getHomeSafeActivated = false;
   List<String> numbers = [];
-  var _service = BackgroundStt();
+  bool _first = false;
+  late BackgroundStt _service;
   String result = "Say something!";
   var isListening = false;
 
@@ -52,23 +49,10 @@ class _SafeHomeState extends State<SafeHome> {
   @override
   void initState() {
     super.initState();
-    // startIt();
     checkGetHomeActivated();
-    _service.startSpeechListenService;
-    _service.pauseListening();
 
     setState(() {
       if (mounted) isListening = false;
-    });
-
-    _service.getSpeechResults().onData((data) {
-      print("getSpeechResults: ${data.result} , ${data.isPartial} [STT Mode]");
-
-      _doOnSpeechCommandMatch(data.result);
-
-      setState(() {
-        result = data.result!;
-      });
     });
   }
 
@@ -85,23 +69,6 @@ class _SafeHomeState extends State<SafeHome> {
     super.dispose();
     _service.stopSpeechListenService;
   }
-
-  // void startIt() async {
-  //   filePath = 'sdcard/Downloads/temp3.wav';
-  //   _myRecorder = FlutterSoundRecorder();
-
-  //   await _myRecorder.openAudioSession(
-  //       focus: AudioFocus.requestFocusAndStopOthers,
-  //       category: SessionCategory.playAndRecord,
-  //       mode: SessionMode.modeDefault,
-  //       device: AudioDevice.speaker);
-  //   await _myRecorder.setSubscriptionDuration(Duration(milliseconds: 10));
-  //   await initializeDateFormatting();
-
-  //   await Permission.microphone.request();
-  //   await Permission.storage.request();
-  //   await Permission.manageExternalStorage.request();
-  // }
 
   @override
   Widget build(BuildContext context) {
@@ -220,14 +187,32 @@ class _SafeHomeState extends State<SafeHome> {
                           setModalState(() {
                             getHomeActivated = val;
                           });
-                          if (getHomeActivated) {
-                            changeStateOfHomeSafe(true);
-                            print("Activated.........");
-                            await _service.resumeListening();
+                          if (!_first) {
+                            setState(() {
+                              _first = true;
+                              _service = BackgroundStt();
+                              _service.startSpeechListenService;
+                              _service.getSpeechResults().onData((data) {
+                                print(
+                                    "getSpeechResults: ${data.result} , ${data.isPartial} [STT Mode]");
+
+                                _doOnSpeechCommandMatch(data.result);
+
+                                setState(() {
+                                  result = data.result!;
+                                });
+                              });
+                            });
                           } else {
-                            changeStateOfHomeSafe(false);
-                            print("DEActivated.........");
-                            await _service.pauseListening();
+                            if (getHomeActivated) {
+                              changeStateOfHomeSafe(true);
+                              print("Activated.........");
+                              await _service.resumeListening();
+                            } else {
+                              changeStateOfHomeSafe(false);
+                              print("DEActivated.........");
+                              await _service.pauseListening();
+                            }
                           }
                         },
                         subtitle: Text(

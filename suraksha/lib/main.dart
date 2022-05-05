@@ -67,12 +67,14 @@ Future<void> setVariables() async {
 
   String? email = prefs.getString('userEmail');
   if (email == null || email == '') {
-    prefs.setBool('isLoggedIn', false);
-    prefs.setString('userEmail', '');
-    prefs.setBool('alertFlag', true);
-    prefs.setBool("showManual", false);
+    await prefs.setBool('isLoggedIn', false);
+    await prefs.setString('userEmail', '');
+    await prefs.setBool('alertFlag', true);
+    await prefs.setBool("showManual", false);
+    await prefs.setBool("locationMonitoring", false);
+    await prefs.setBool("getHomeSafe", false);
   }
-  prefs.setStringList('location', [a, b]);
+  await prefs.setStringList('location', [a, b]);
 }
 
 Future<void> callBack(String tag) async {
