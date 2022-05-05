@@ -20,7 +20,7 @@ class _SafeHomeState extends State<SafeHome> {
   bool getHomeSafeActivated = false;
   List<String> numbers = [];
   bool _first = false;
-  late BackgroundStt _service;
+  BackgroundStt? _service;
   String result = "Say something!";
   var isListening = false;
 
@@ -67,7 +67,7 @@ class _SafeHomeState extends State<SafeHome> {
   @override
   void dispose() {
     super.dispose();
-    _service.stopSpeechListenService;
+    _service?.stopSpeechListenService;
   }
 
   @override
@@ -191,8 +191,8 @@ class _SafeHomeState extends State<SafeHome> {
                             setState(() {
                               _first = true;
                               _service = BackgroundStt();
-                              _service.startSpeechListenService;
-                              _service.getSpeechResults().onData((data) {
+                              _service?.startSpeechListenService;
+                              _service?.getSpeechResults().onData((data) {
                                 print(
                                     "getSpeechResults: ${data.result} , ${data.isPartial} [STT Mode]");
 
@@ -207,11 +207,11 @@ class _SafeHomeState extends State<SafeHome> {
                             if (getHomeActivated) {
                               changeStateOfHomeSafe(true);
                               print("Activated.........");
-                              await _service.resumeListening();
+                              await _service?.resumeListening();
                             } else {
                               changeStateOfHomeSafe(false);
                               print("DEActivated.........");
-                              await _service.pauseListening();
+                              await _service?.pauseListening();
                             }
                           }
                         },
