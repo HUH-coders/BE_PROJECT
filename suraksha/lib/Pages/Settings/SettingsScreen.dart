@@ -41,20 +41,14 @@ class _SettingsScreenState extends State<SettingsScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.white,
-      // backgroundColor: primary_color,
       appBar: AppBar(
         elevation: 0,
         backgroundColor: Colors.transparent,
-        title:
-            // Padding(
-            // padding: const EdgeInsets.all(18.0),
-            // child:
-            Text(
+        title: Text(
           "Settings",
           style: TextStyle(
               fontSize: 25, fontWeight: FontWeight.w500, color: Colors.black),
         ),
-        // ),
         leading: IconButton(
             icon: Icon(
               Icons.arrow_back_ios_rounded,
@@ -91,9 +85,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
             subtitle: Text("Your safety in your hands"),
           ),
           Padding(
-            padding: const EdgeInsets.all(18.0),
+            padding: const EdgeInsets.all(10.0),
             child: Text(
-              "Safe Shake is the key feature for the app. It can be turned on to silently listens for the device shake. When the user feels uncomfortable or finds herself in a situation where sending SOS is the most viable descision. Then She can shake her phone rapidly to send SOS alert to specified contacts without opening the app.",
+              "Suraksha is developed to help women in times of distress though men can use it too. It assures safety with various trigger generation techniques like shake detection, lock key press and using audio monitoring to detect trigger words like ‘Help’ and ‘Bachao’. After alert generation, different actions like periodic location tracking, background video recording and sending it to all the emergency contacts is performed.",
               style: TextStyle(color: Colors.grey),
             ),
           ),
@@ -169,14 +163,4 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
     return running;
   }
-
-  // void controllSafeShake(bool val) async {
-  //   if (val) {
-  //     FlutterBackgroundService.initialize(onStart);
-  //   } else {
-  //     FlutterBackgroundService().sendData(
-  //       {"action": "stopService"},
-  //     );
-  //   }
-  // }
 }

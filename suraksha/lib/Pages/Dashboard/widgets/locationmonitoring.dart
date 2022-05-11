@@ -28,9 +28,10 @@ class _LocationMonitoringState extends State<LocationMonitoring> {
 
   changeStateOfHomeSafe(value) async {
     if (value) {
-      Fluttertoast.showToast(msg: "Service Activated in Background!");
+      Fluttertoast.showToast(
+          msg: "Location Monitoring Activated in Background!");
     } else {
-      Fluttertoast.showToast(msg: "Service Disabled!");
+      Fluttertoast.showToast(msg: "Location Monitoring Disabled!");
     }
     SharedPreferences prefs = await SharedPreferences.getInstance();
 
@@ -133,7 +134,6 @@ class _LocationMonitoringState extends State<LocationMonitoring> {
                             if (getHomeActivated) {
                               changeStateOfHomeSafe(true);
                               sendLocationPeriodically();
-                              // generateAlert();
                             } else {
                               changeStateOfHomeSafe(false);
                               await Workmanager().cancelByTag("3");

@@ -43,7 +43,7 @@ class _HomeState extends State<Home> {
   @override
   void initState() {
     super.initState();
-    showManual();
+    // showManual();
     // if (!manualFlag) {
     //   WidgetsBinding.instance!.addPostFrameCallback((_) =>
     //       ShowCaseWidget.of(context)?.startShowCase(

@@ -3,13 +3,13 @@ import 'package:showcaseview/showcaseview.dart';
 import 'package:suraksha/Pages/Contacts/mycontacts.dart';
 import 'package:suraksha/Pages/Contacts/addContact.dart';
 import 'package:suraksha/Pages/Dashboard/home.dart';
+import 'package:suraksha/Services/GenerateAlert.dart';
 
 class Dashboard extends StatefulWidget {
   final int pageIndex;
   const Dashboard({Key? key, this.pageIndex = 0}) : super(key: key);
 
   @override
-  // ignore: no_logic_in_create_state
   _DashboardState createState() => _DashboardState(currentPage: pageIndex);
 }
 
@@ -42,7 +42,9 @@ class _DashboardState extends State<Dashboard> {
                 child: Image.asset("assets/add-contact.png", height: 60),
               )
             : FloatingActionButton(
-                onPressed: () {},
+                onPressed: () {
+                  generateAlert();
+                },
                 child: alerted
                     ? Column(mainAxisSize: MainAxisSize.min, children: [
                         Image.asset("assets/alarm.png", height: 24),

@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_background_service/flutter_background_service.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:geolocator/geolocator.dart';
+import 'package:permission_handler/permission_handler.dart';
 import 'package:suraksha/Helpers/overlay.dart';
 import 'package:suraksha/Pages/Dashboard/dashboard.dart';
 import 'package:suraksha/Pages/splash.dart';
@@ -37,11 +38,9 @@ void main() async {
 
 Future<Position> getLocation() async {
   LocationPermission permission;
-
-// Test if location services are enabled.
   bool _ = await Geolocator.isLocationServiceEnabled();
-
   permission = await Geolocator.checkPermission();
+
   if (permission == LocationPermission.denied) {
     permission = await Geolocator.requestPermission();
     if (permission == LocationPermission.denied) {
@@ -81,26 +80,13 @@ Future<void> callBack(String tag) async {
   WidgetsFlutterBinding.ensureInitialized();
   if (tag == "cancel_alert") {
     print(tag);
-    Fluttertoast.showToast(msg: "Alert not Generated");
+    // Fluttertoast.showToast(msg: "Alert not Generated");
     SharedPreferences prefs = await SharedPreferences.getInstance();
-    SystemAlertWindow.closeSystemWindow(prefMode: SystemWindowPrefMode.OVERLAY);
     await prefs.setBool('alertFlag', false);
+    print(prefs.getBool('alertFlag'));
+    SystemAlertWindow.closeSystemWindow(prefMode: SystemWindowPrefMode.OVERLAY);
   }
 }
-
-// void sendLocation(email, location) async {
-//   String username = 'autoemailtesting12@gmail.com';
-//   String password = 'email@1234';
-//   final smtpServer = gmail(username, password);
-//   final equivalentMessage = Message()
-//     ..from = Address(username, 'Suraksha')
-//     ..recipients.add(Address(email))
-//     // ..ccRecipients.addAll([Address('urvi.bheda@somaiya.edu'), 'himali.saini@somaiya.edu'])
-//     // ..bccRecipients.add('bccAddress@example.com')
-//     ..subject = 'Alert Generated ${DateTime.now()}'
-//     ..text = 'This is the plain text.\nThis is line 2 of the text part.'
-//     ..html = "<h1>Alert generated</h1>\n\n<p>See location Here: $location </p>";
-// }
 
 const simplePeriodicTask = "sendLocation";
 const sendVideo = "sendVideo";
@@ -111,7 +97,6 @@ void callbackDispatcher() {
         await sendLocationMessage(inputData!['contacts']);
         return true;
       case sendVideo:
-        await Telephony.instance.requestSmsPermissions;
         List contacts = inputData!['contacts'];
         String link = inputData['link'];
         sendVideoMessage(contacts, link);
@@ -136,16 +121,11 @@ Future<void> sendLocationMessage(contacts) async {
 
 Future<void> sendVideoMessage(contacts, link) async {
   for (String contact in contacts) {
-    try {
-      await Telephony.backgroundInstance.sendSms(
-        to: contact,
-        message: "Check Video Recording here.\n$link",
-      );
-      print("message sent");
-    } catch (e) {
-      print(e);
-      print("message not sent");
-    }
+    Telephony.backgroundInstance.sendSms(
+      to: contact,
+      message: "Check Video Recording here.\n$link",
+    );
+    print("message sent");
   }
 }
 
@@ -153,28 +133,18 @@ Future<void> initializeService() async {
   final service = FlutterBackgroundService();
   await service.configure(
     androidConfiguration: AndroidConfiguration(
-      // this will executed when app is in foreground or background in separated isolate
       onStart: onStart,
-
-      // auto start service
       autoStart: true,
       isForegroundMode: true,
     ),
     iosConfiguration: IosConfiguration(
-      // auto start service
       autoStart: true,
-
-      // this will executed when app is in foreground in separated isolate
       onForeground: onStart,
-
-      // you have to enable background fetch capability on xcode project
       onBackground: onIosBackground,
     ),
   );
 }
 
-// to ensure this executed
-// run app from xcode, then from xcode menu, select Simulate Background Fetch
 void onIosBackground() {
   WidgetsFlutterBinding.ensureInitialized();
   print('FLUTTER BACKGROUND FETCH');
@@ -239,8 +209,9 @@ class _MyAppState extends State<MyApp> {
     SystemAlertWindow.registerOnClickListener(callBack);
     getEmail();
     ShakeDetector _ = ShakeDetector.autoStart(
-        shakeThresholdGravity: 8,
         shakeSlopTimeMS: 500,
+        shakeCountResetTime: 3000,
+        shakeThresholdGravity: 6,
         onPhoneShake: () {
           print("SHAKE DETECTOR");
           _startTimer();
@@ -254,7 +225,7 @@ class _MyAppState extends State<MyApp> {
         keyPressCount++;
         print(keyPressCount);
         if (keyPressCount == 3) {
-          print("alert generated");
+          // print("alert generated");
           keyPressCount = 0;
           _startTimer();
           _showOverlayWindow();
@@ -281,7 +252,7 @@ class _MyAppState extends State<MyApp> {
     if (_timer != null) {
       _timer!.cancel();
     }
-    _timer = Timer.periodic(Duration(seconds: 1), (timer) {
+    _timer = Timer.periodic(Duration(seconds: 1), (timer) async {
       if (_counter > 0) {
         _counter--;
       } else {
@@ -294,18 +265,19 @@ class _MyAppState extends State<MyApp> {
           generateAlert();
         } else {
           print("alert not Generated");
-          prefs.setBool('alertFlag', true);
+          await prefs.setBool('alertFlag', true);
         }
       }
     });
   }
 
   Future<void> _requestPermissions() async {
-    await SystemAlertWindow.requestPermissions(
-        prefMode: SystemWindowPrefMode.OVERLAY);
-    final Telephony telephony = Telephony.instance;
-    bool? permissionsGranted = await telephony.requestPhoneAndSmsPermissions;
-    print(permissionsGranted);
+    await Permission.camera.request();
+    await Permission.storage.request();
+    await Permission.sms.request();
+    await Permission.location.request();
+    await Permission.microphone.request();
+    await Permission.phone.request();
   }
 
   void _showOverlayWindow() {

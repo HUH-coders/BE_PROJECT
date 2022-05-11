@@ -1,9 +1,6 @@
 import 'dart:async';
-// import 'package:suraksha/Models/User.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:suraksha/Models/EmergencyContact.dart';
-// import 'package:suraksha/Models/User.dart';
-// import 'dart:convert';
 
 Future<Map> addContact(EmergencyContact ec, String email) async {
   Map result = {'flag': false, 'message': ''};

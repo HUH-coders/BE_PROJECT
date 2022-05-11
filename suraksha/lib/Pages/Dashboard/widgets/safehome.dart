@@ -5,6 +5,7 @@ import 'package:fluttertoast/fluttertoast.dart';
 import 'package:lottie/lottie.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:suraksha/Models/EmergencyContact.dart';
+import 'package:suraksha/Services/GenerateAlert.dart';
 import 'package:suraksha/Services/UserService.dart';
 import 'package:background_stt/background_stt.dart';
 
@@ -22,7 +23,6 @@ class _SafeHomeState extends State<SafeHome> {
   bool _first = false;
   BackgroundStt? _service;
   String result = "Say something!";
-  var isListening = false;
 
   checkGetHomeActivated() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
@@ -34,9 +34,9 @@ class _SafeHomeState extends State<SafeHome> {
 
   changeStateOfHomeSafe(value) async {
     if (value) {
-      Fluttertoast.showToast(msg: "Service Activated in Background!");
+      Fluttertoast.showToast(msg: "Safe Home Service Activated in Background!");
     } else {
-      Fluttertoast.showToast(msg: "Service Disabled!");
+      Fluttertoast.showToast(msg: "Safe Home Service Disabled!");
     }
     SharedPreferences prefs = await SharedPreferences.getInstance();
 
@@ -50,17 +50,18 @@ class _SafeHomeState extends State<SafeHome> {
   void initState() {
     super.initState();
     checkGetHomeActivated();
-
-    setState(() {
-      if (mounted) isListening = false;
-    });
   }
 
-  void _doOnSpeechCommandMatch(String? command) {
-    if (command == "help") {
-      // generateAlert();
+  void _doOnSpeechCommandMatch(String? command) async {
+    if (command == "help" ||
+        command == "bachao" ||
+        command == "Help" ||
+        command == "Bachao") {
+      generateAlert();
       print("Alertt generated...");
       Fluttertoast.showToast(msg: "Spoke help");
+      changeStateOfHomeSafe(false);
+      await _service?.pauseListening();
     }
   }
 
@@ -235,25 +236,4 @@ class _SafeHomeState extends State<SafeHome> {
     }
     return numbers;
   }
-
-  // Future<void> record() async {
-  //   Directory dir = Directory(path.dirname(filePath));
-  //   if (!dir.existsSync()) {
-  //     dir.createSync();
-  //   }
-  //   _myRecorder.openAudioSession();
-  //   await _myRecorder.startRecorder(toFile: filePath, codec: Codec.pcm16WAV);
-
-  //   // StreamSubscription _recorderSubscription =
-  //   //     _myRecorder.onProgress!.listen((e) {
-  //   //   var date = DateTime.fromMillisecondsSinceEpoch(e.duration.inMilliseconds,
-  //   //       isUtc: true);
-  //   // });
-  //   // _recorderSubscription.cancel();
-  // }
-
-  // Future<String?> stopRecord() async {
-  //   _myRecorder.closeAudioSession();
-  //   return await _myRecorder.stopRecorder();
-  // }
 }

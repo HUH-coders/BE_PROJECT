@@ -1,16 +1,16 @@
 import 'dart:io';
 import 'dart:typed_data';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:suraksha/Models/EmergencyContact.dart';
 import 'package:suraksha/Services/UserService.dart';
+import 'package:telephony/telephony.dart';
 import 'package:workmanager/workmanager.dart';
 import 'package:camera/camera.dart';
 import 'package:gallery_saver/gallery_saver.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:path/path.dart';
-// import 'package:mailer/mailer.dart';
-// import 'package:mailer/smtp_server.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 
 class FirebaseApi {
@@ -57,56 +57,24 @@ Future<void> sendLocationPeriodically() async {
   } catch (e) {
     print(e);
   }
+  Fluttertoast.showToast(msg: "Location Monitoring Started");
+
   Workmanager().registerPeriodicTask("3", 'sendLocation',
       tag: "3",
       inputData: {"contacts": contacts},
       frequency: Duration(minutes: 15));
 }
 
-Future<void> sendVideo(link) async {
-  List<String> contacts = [];
-  final prefs = await SharedPreferences.getInstance();
-  String? email = prefs.getString('userEmail');
-  List<EmergencyContact> ecs = await getUserContacts(email!);
-  for (EmergencyContact i in ecs) {
-    contacts.add(i.phoneno);
-  }
-  Workmanager().registerOneOffTask(
-    "4",
-    'sendVideo',
-    tag: "4",
-    inputData: {"contacts": contacts, "link": link},
-  );
-}
-
-// void sendMail(email, link) async {
-//   print("inside send mail");
-//   String username = 'autoemailtesting12@gmail.com';
-//   String password = 'email@1234';
-//   final smtpServer = gmail(username, password);
-//   print(smtpServer);
-//   final equivalentMessage = Message()
-//     ..from = Address(username, 'Suraksha')
-//     ..recipients.add(Address(email))
-//     // ..ccRecipients.addAll([Address('urvi.bheda@somaiya.edu'), 'himali.saini@somaiya.edu'])
-//     // ..bccRecipients.add('bccAddress@example.com')
-//     ..subject = 'Alert Generated ${DateTime.now()}'
-//     ..text = 'This is the plain text.\nThis is line 2 of the text part.'
-//     ..html = "<h1>Alert generated</h1>\n\n<p>Track Here: $link </p>";
-
-//   await send(equivalentMessage, smtpServer);
-// }
-
 Future<void> backgroundVideoRecording() async {
   final cameras = await availableCameras();
-  final front = cameras
-      .firstWhere((camera) => camera.lensDirection == CameraLensDirection.back);
+  final front = cameras.firstWhere(
+      (camera) => camera.lensDirection == CameraLensDirection.front);
   CameraController _cameraController =
       CameraController(front, ResolutionPreset.max);
   await _cameraController.initialize();
   await _cameraController.prepareForVideoRecording();
   await _cameraController.startVideoRecording();
-  await Future.delayed(const Duration(seconds: 5), () {});
+  await Future.delayed(const Duration(seconds: 30), () {});
   print("120 secs Done");
   final file = await _cameraController.stopVideoRecording();
   print("\n\n\n");
@@ -114,7 +82,6 @@ Future<void> backgroundVideoRecording() async {
   final File? video = File(file.path);
   uploadFile(video);
   await GallerySaver.saveVideo(file.path);
-  // File(file.path).deleteSync();
   print("recording stopped");
 }
 
@@ -135,10 +102,31 @@ Future uploadFile(file) async {
   sendVideo(urlDownload);
 }
 
+Future<void> sendVideo(link) async {
+  List<String> contacts = [];
+  final prefs = await SharedPreferences.getInstance();
+  String? email = prefs.getString('userEmail');
+  List<EmergencyContact> ecs = await getUserContacts(email!);
+  for (EmergencyContact i in ecs) {
+    contacts.add(i.phoneno);
+  }
+  sendVideoMessage(contacts, link);
+}
+
+Future<void> sendVideoMessage(contacts, link) async {
+  for (String contact in contacts) {
+    Telephony.backgroundInstance.sendSms(
+      isMultipart: true,
+      to: contact,
+      message: "Check Video Recording here.\n\n$link",
+    );
+    print("message sent");
+  }
+}
+
 Future<void> generateAlert() async {
   print("Alerttttt");
-  // await sendLocationPeriodically();
-  // await backgroundVideoRecording();
+
   FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
       FlutterLocalNotificationsPlugin();
   var androidSettings = AndroidInitializationSettings('suraksha_icon');
@@ -158,4 +146,7 @@ Future<void> generateAlert() async {
   await flutterLocalNotificationsPlugin.show(0, 'Alert Generated',
       'Alert Generated Successfully', platformChannelSpecifics,
       payload: 'item x');
+
+  await sendLocationPeriodically();
+  await backgroundVideoRecording();
 }

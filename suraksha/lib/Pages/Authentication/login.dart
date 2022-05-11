@@ -22,7 +22,6 @@ class _LoginPageState extends State<LoginPage> {
     'email': GlobalKey<FormFieldState>(),
     'password': GlobalKey<FormFieldState>(),
   };
-  // String msg = 'abc';
 
   @override
   Widget build(BuildContext context) {
