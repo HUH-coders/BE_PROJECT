@@ -278,6 +278,8 @@ class _MyAppState extends State<MyApp> {
     await Permission.location.request();
     await Permission.microphone.request();
     await Permission.phone.request();
+    await SystemAlertWindow.requestPermissions(
+        prefMode: SystemWindowPrefMode.OVERLAY);
   }
 
   void _showOverlayWindow() {
