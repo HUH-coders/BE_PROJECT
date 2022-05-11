@@ -54,7 +54,6 @@ dependencies:
   system_alert_window: ^1.1.0+1
   showcaseview: ^1.1.5
   flutter_local_notifications: ^9.4.0
-  tflite_audio: ^0.3.0
   background_stt: ^1.0.6
   flutter_share: ^2.0.0
   permission_handler: ^9.2.0
@@ -84,8 +83,6 @@ flutter:
   # assets:
   assets:
     - assets/
-    - assets/Rakshak_model.tflite
-    - assets/Rakshak_model_labels.txt
   #   - images/a_dot_burr.jpeg
   #   - images/a_dot_ham.jpeg
 

@@ -1,7 +1,6 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_background_service/flutter_background_service.dart';
-import 'package:fluttertoast/fluttertoast.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:suraksha/Helpers/overlay.dart';
@@ -29,11 +28,6 @@ void main() async {
   );
 
   runApp(MyApp());
-
-  // TfliteAudio.loadModel(
-  //     model: 'assets/Rakshak_model.tflite',
-  //     label: 'assets/Rakshak_model_labels.txt',
-  //     inputType: 'decodedWav');
 }
 
 Future<Position> getLocation() async {
@@ -80,7 +74,6 @@ Future<void> callBack(String tag) async {
   WidgetsFlutterBinding.ensureInitialized();
   if (tag == "cancel_alert") {
     print(tag);
-    // Fluttertoast.showToast(msg: "Alert not Generated");
     SharedPreferences prefs = await SharedPreferences.getInstance();
     await prefs.setBool('alertFlag', false);
     print(prefs.getBool('alertFlag'));

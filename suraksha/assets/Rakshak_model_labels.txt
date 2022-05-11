@@ -1,6 +1,0 @@
-bachao
-stop
-help
-no
-go
-yes
