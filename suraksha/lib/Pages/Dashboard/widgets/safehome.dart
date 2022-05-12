@@ -196,9 +196,7 @@ class _SafeHomeState extends State<SafeHome> {
                               _service?.getSpeechResults().onData((data) {
                                 print(
                                     "getSpeechResults: ${data.result} , ${data.isPartial} [STT Mode]");
-
                                 _doOnSpeechCommandMatch(data.result);
-
                                 setState(() {
                                   result = data.result!;
                                 });

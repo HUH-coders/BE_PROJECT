@@ -2,7 +2,6 @@ import 'package:carousel_slider/carousel_slider.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:showcaseview/showcaseview.dart';
-import 'package:suraksha/Pages/Dashboard/widgets/articleDesc.dart';
 import 'package:suraksha/Pages/Dashboard/widgets/safewebview.dart';
 import 'package:suraksha/Helpers/constants.dart';
 
@@ -36,20 +35,27 @@ class SafeCarousel extends StatelessWidget {
                           context,
                           SafeWebView(
                               index: index,
-                              title: "Pakistani women inspiring the country",
+                              title:
+                                  "Brave girl uses GPS to save herself from kidnappers",
                               url:
-                                  "https://gulfnews.com/world/asia/pakistan/womens-day-10-pakistani-women-inspiring-the-country-1.77696239"));
+                                  "https://www.orissapost.com/brave-girl-uses-gps-to-save-herself-from-kidnappers/"));
                     } else if (index == 1) {
                       navigateToRoute(
                           context,
                           SafeWebView(
                               index: index,
-                              title: "We have to end Violance",
+                              title: "TOP 10 SAFETY TIPS FOR WOMEN",
                               url:
-                                  "https://plan-international.org/ending-violence/16-ways-end-violence-girls"));
+                                  "https://issuesiface.com/magazine/top-10-safety-tips-for-women/"));
                     } else if (index == 2) {
-                      navigateToRoute(context, ArticleDesc(index: index));
-                    } else {
+                      navigateToRoute(
+                          context,
+                          SafeWebView(
+                              index: index,
+                              title: "Cyber safety tips for women",
+                              url:
+                                  "https://www.womenlawsindia.com/legal-awareness/cyber-safety-tips-for-women/"));
+                    } else if (index == 3) {
                       navigateToRoute(
                           context,
                           SafeWebView(

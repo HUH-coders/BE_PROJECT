@@ -1,7 +1,6 @@
 import 'dart:io';
 import 'dart:typed_data';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:fluttertoast/fluttertoast.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:suraksha/Models/EmergencyContact.dart';
 import 'package:suraksha/Services/UserService.dart';
@@ -57,7 +56,6 @@ Future<void> sendLocationPeriodically() async {
   } catch (e) {
     print(e);
   }
-  Fluttertoast.showToast(msg: "Location Monitoring Started");
 
   Workmanager().registerPeriodicTask("3", 'sendLocation',
       tag: "3",
@@ -121,6 +119,19 @@ Future<void> sendVideoMessage(contacts, link) async {
       message: "Check Video Recording here.\n\n$link",
     );
     print("message sent");
+  }
+}
+
+Future<void> sendLocationMessage(contacts) async {
+  SharedPreferences prefs = await SharedPreferences.getInstance();
+  List<String>? _locationData = prefs.getStringList('location');
+  String a = _locationData![0];
+  String b = _locationData[1];
+
+  String link = "http://maps.google.com/?q=$a,$b";
+  for (String contact in contacts) {
+    Telephony.backgroundInstance
+        .sendSms(to: contact, message: "I am on my way! Track me here.\n$link");
   }
 }
 
