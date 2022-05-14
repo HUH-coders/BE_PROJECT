@@ -179,15 +179,13 @@ class _MyAppState extends State<MyApp> {
   void initState() {
     super.initState();
     _requestPermissions();
-    SystemAlertWindow.registerOnClickListener(callBack);
     getEmail();
+    SystemAlertWindow.registerOnClickListener(callBack);
     ShakeDetector _ = ShakeDetector.autoStart(
         shakeSlopTimeMS: 500,
         shakeCountResetTime: 3000,
         shakeThresholdGravity: 6,
         onPhoneShake: () {
-          print("SHAKE DETECTOR");
-          // makeAlertFlagTrue();
           _startTimer();
           _showOverlayWindow();
         });
@@ -232,33 +230,11 @@ class _MyAppState extends State<MyApp> {
   }
 }
 
-bool _val = false;
-
 Future<void> callBack(String tag) async {
   WidgetsFlutterBinding.ensureInitialized();
   if (tag == "cancel_alert") {
-    _val = true;
-    print(_val);
-    printval();
-    _timer?.cancel();
-    print(_timer?.isActive);
     SystemAlertWindow.closeSystemWindow(prefMode: SystemWindowPrefMode.OVERLAY);
     Fluttertoast.showToast(msg: "Alert cancelled!");
-  }
-}
-
-printval() {
-  print("this" + _val.toString());
-}
-
-performthis() {
-  print(_val);
-  if (_val == false) {
-    print("generating alert");
-    // generateAlert();
-  } else {
-    print("alert not generated");
-    _val = false;
   }
 }
 
@@ -270,13 +246,11 @@ Future<void> _startTimer() async {
   _timer = Timer.periodic(Duration(seconds: 1), (timer) async {
     if (_counter > 0) {
       _counter--;
-      printval();
     } else {
       _timer!.cancel();
-      SystemAlertWindow.closeSystemWindow(
+      await SystemAlertWindow.closeSystemWindow(
           prefMode: SystemWindowPrefMode.OVERLAY);
-      performthis();
-      printval();
+      generateAlert();
     }
   });
 }

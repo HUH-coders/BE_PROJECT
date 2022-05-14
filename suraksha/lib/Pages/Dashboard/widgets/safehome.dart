@@ -4,13 +4,15 @@ import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:lottie/lottie.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:showcaseview/showcaseview.dart';
 import 'package:suraksha/Models/EmergencyContact.dart';
 import 'package:suraksha/Services/GenerateAlert.dart';
 import 'package:suraksha/Services/UserService.dart';
 import 'package:background_stt/background_stt.dart';
 
 class SafeHome extends StatefulWidget {
-  const SafeHome({Key? key}) : super(key: key);
+  final List<GlobalKey> keyList;
+  const SafeHome({Key? key, required this.keyList}) : super(key: key);
 
   @override
   _SafeHomeState createState() => _SafeHomeState();
@@ -59,7 +61,31 @@ class _SafeHomeState extends State<SafeHome> {
         command == "Bachao") {
       generateAlert();
       print("Alertt generated...");
-      Fluttertoast.showToast(msg: "Spoke help");
+      Fluttertoast.showToast(msg: "Help needed!!");
+      changeStateOfHomeSafe(false);
+      await _service?.pauseListening();
+    }
+    if (command!.contains("bachao help") ||
+        command == "Bachao help" ||
+        command.contains("help bachao") ||
+        command == "Help bachao") {
+      print("Alertt generated...");
+      Fluttertoast.showToast(msg: "Help needed!!");
+      generateAlert();
+      changeStateOfHomeSafe(false);
+      await _service?.pauseListening();
+    }
+    if (command.contains("bachao bachao") || command == "Bachao bachao") {
+      print("Alertt generated...");
+      Fluttertoast.showToast(msg: "Help needed!!");
+      generateAlert();
+      changeStateOfHomeSafe(false);
+      await _service?.pauseListening();
+    }
+    if (command.contains("help help") || command == "Help help") {
+      print("Alertt generated...");
+      Fluttertoast.showToast(msg: "Help needed!!");
+      generateAlert();
       changeStateOfHomeSafe(false);
       await _service?.pauseListening();
     }
@@ -73,62 +99,67 @@ class _SafeHomeState extends State<SafeHome> {
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 10.0, vertical: 5),
-      child: InkWell(
-        onTap: () {
-          showModelSafeHome(getHomeSafeActivated);
-        },
-        child: Card(
-          elevation: 5,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(20),
-          ),
-          child: Container(
-            height: 180,
-            width: MediaQuery.of(context).size.width * 0.7,
-            decoration: BoxDecoration(
+    return Showcase(
+      key: widget.keyList[0],
+      title: 'Audio Monitoring',
+      description: 'Switch on to recognize your voice continuously',
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 10.0, vertical: 5),
+        child: InkWell(
+          onTap: () {
+            showModelSafeHome(getHomeSafeActivated);
+          },
+          child: Card(
+            elevation: 5,
+            shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(20),
             ),
-            child: Row(
-              children: [
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                    children: [
-                      ListTile(
-                        title: Text("Get Home Safe"),
-                        subtitle: Text(
-                            "Monitor Audio Continuously \n\nRecommended in Highly Dangerous Area"),
-                      ),
-                      Visibility(
-                        visible: getHomeSafeActivated,
-                        child: Padding(
-                            padding: const EdgeInsets.all(18.0),
-                            child: Row(
-                              children: [
-                                SpinKitDoubleBounce(
-                                  color: Colors.red,
-                                  size: 15,
-                                ),
-                                SizedBox(width: 15),
-                                Text("Currently Running...",
-                                    style: TextStyle(
-                                        color: Colors.red, fontSize: 10)),
-                              ],
-                            )),
-                      ),
-                    ],
+            child: Container(
+              height: 180,
+              width: MediaQuery.of(context).size.width * 0.7,
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(20),
+              ),
+              child: Row(
+                children: [
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                      children: [
+                        ListTile(
+                          title: Text("Get Home Safe"),
+                          subtitle: Text(
+                              "Monitor Audio Continuously \n\nRecommended in Highly Dangerous Area"),
+                        ),
+                        Visibility(
+                          visible: getHomeSafeActivated,
+                          child: Padding(
+                              padding: const EdgeInsets.all(18.0),
+                              child: Row(
+                                children: [
+                                  SpinKitDoubleBounce(
+                                    color: Colors.red,
+                                    size: 15,
+                                  ),
+                                  SizedBox(width: 15),
+                                  Text("Currently Running...",
+                                      style: TextStyle(
+                                          color: Colors.red, fontSize: 10)),
+                                ],
+                              )),
+                        ),
+                      ],
+                    ),
                   ),
-                ),
-                ClipRRect(
-                    borderRadius: BorderRadius.circular(20),
-                    child: Image.asset(
-                      "assets/route.jpg",
-                      height: 140,
-                    ))
-              ],
+                  ClipRRect(
+                      borderRadius: BorderRadius.circular(20),
+                      child: Image.asset(
+                        "assets/route.jpg",
+                        height: 140,
+                      ))
+                ],
+              ),
             ),
           ),
         ),

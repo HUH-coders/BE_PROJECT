@@ -3,11 +3,13 @@ import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:lottie/lottie.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:showcaseview/showcaseview.dart';
 import 'package:suraksha/Services/GenerateAlert.dart';
 import 'package:workmanager/workmanager.dart';
 
 class LocationMonitoring extends StatefulWidget {
-  const LocationMonitoring({Key? key}) : super(key: key);
+  final List<GlobalKey> keyList;
+  const LocationMonitoring({Key? key, required this.keyList}) : super(key: key);
 
   @override
   _LocationMonitoringState createState() => _LocationMonitoringState();
@@ -49,48 +51,55 @@ class _LocationMonitoringState extends State<LocationMonitoring> {
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 10.0, vertical: 5),
-        child: InkWell(
-            onTap: () {
-              showModelSafeHome(locationMonitoringActivated);
-            },
-            child: Card(
-                elevation: 5,
-                shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(20)),
-                child: Container(
-                    height: 180,
-                    width: MediaQuery.of(context).size.width * 0.7,
-                    decoration:
-                        BoxDecoration(borderRadius: BorderRadius.circular(20)),
-                    child: Row(children: [
-                      Expanded(
-                          child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                              children: [
-                            ListTile(
-                                title: Text("Location Monitoring"),
-                                subtitle: Text("Share Location Periodically")),
-                            Visibility(
-                                visible: locationMonitoringActivated,
-                                child: Padding(
-                                    padding: const EdgeInsets.all(18.0),
-                                    child: Row(children: [
-                                      SpinKitDoubleBounce(
-                                          color: Colors.red, size: 15),
-                                      SizedBox(width: 15),
-                                      Text("Currently Running...",
-                                          style: TextStyle(
-                                              color: Colors.red, fontSize: 10))
-                                    ])))
-                          ])),
-                      ClipRRect(
-                          borderRadius: BorderRadius.circular(20),
-                          child:
-                              Image.asset("assets/Location.png", height: 140))
-                    ])))));
+    return Showcase(
+      key: widget.keyList[0],
+      description: 'Location Monitoring',
+      child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 10.0, vertical: 5),
+          child: InkWell(
+              onTap: () {
+                showModelSafeHome(locationMonitoringActivated);
+              },
+              child: Card(
+                  elevation: 5,
+                  shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(20)),
+                  child: Container(
+                      height: 180,
+                      width: MediaQuery.of(context).size.width * 0.7,
+                      decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(20)),
+                      child: Row(children: [
+                        Expanded(
+                            child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceEvenly,
+                                children: [
+                              ListTile(
+                                  title: Text("Location Monitoring"),
+                                  subtitle:
+                                      Text("Share Location Periodically")),
+                              Visibility(
+                                  visible: locationMonitoringActivated,
+                                  child: Padding(
+                                      padding: const EdgeInsets.all(18.0),
+                                      child: Row(children: [
+                                        SpinKitDoubleBounce(
+                                            color: Colors.red, size: 15),
+                                        SizedBox(width: 15),
+                                        Text("Currently Running...",
+                                            style: TextStyle(
+                                                color: Colors.red,
+                                                fontSize: 10))
+                                      ])))
+                            ])),
+                        ClipRRect(
+                            borderRadius: BorderRadius.circular(20),
+                            child:
+                                Image.asset("assets/Location.png", height: 140))
+                      ]))))),
+    );
   }
 
   showModelSafeHome(bool processRunning) async {

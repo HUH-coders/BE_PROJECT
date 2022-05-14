@@ -23,6 +23,10 @@ class _HomeState extends State<Home> {
   GlobalKey _emergency = GlobalKey();
   GlobalKey _livesafe = GlobalKey();
   GlobalKey _carousel = GlobalKey();
+  GlobalKey _shake = GlobalKey();
+  GlobalKey _volumethrice = GlobalKey();
+  GlobalKey _audiomonitoring = GlobalKey();
+  GlobalKey _locationmonitoring = GlobalKey();
   bool manualFlag = false;
 
   showManual() async {
@@ -87,8 +91,17 @@ class _HomeState extends State<Home> {
             ),
             leading: GestureDetector(
               onTap: () {
-                ShowCaseWidget.of(context)?.startShowCase(
-                    [_emergency, _livesafe, _setting, _quotes, _carousel]);
+                ShowCaseWidget.of(context)?.startShowCase([
+                  _shake,
+                  _volumethrice,
+                  _emergency,
+                  _livesafe,
+                  _setting,
+                  _quotes,
+                  _carousel,
+                  _locationmonitoring,
+                  _audiomonitoring
+                ]);
               },
               child: Card(
                   elevation: 4,
@@ -128,6 +141,17 @@ class _HomeState extends State<Home> {
               shrinkWrap: true,
               children: [
                 SafeCarousel(keyList: [_carousel]),
+                Showcase(
+                    key: _shake,
+                    description:
+                        'Shake continuously 4-5 times to generate alert',
+                    title: 'Alert by Shake',
+                    child: SizedBox()),
+                Showcase(
+                    key: _volumethrice,
+                    description: 'Press Volume key thrice to generate an alert',
+                    title: 'Alert by Pressing Volume Key',
+                    child: SizedBox()),
                 Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 8.0),
                     child: Row(
@@ -147,8 +171,8 @@ class _HomeState extends State<Home> {
                         style: TextStyle(
                             fontWeight: FontWeight.bold, fontSize: 20))),
                 LiveSafe(keyList: [_livesafe]),
-                LocationMonitoring(),
-                SafeHome(),
+                LocationMonitoring(keyList: [_locationmonitoring]),
+                SafeHome(keyList: [_audiomonitoring]),
                 const SizedBox(height: 50)
               ],
             ),
